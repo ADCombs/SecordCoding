@@ -1,0 +1,7 @@
+C:\Users\truth\source\repos\DefendYourCodeMidTerm\DefendYourCodeMidTerm\bin\Debug\DefendYourCodeMidTerm.exe.config
+C:\Users\truth\source\repos\DefendYourCodeMidTerm\DefendYourCodeMidTerm\bin\Debug\DefendYourCodeMidTerm.exe
+C:\Users\truth\source\repos\DefendYourCodeMidTerm\DefendYourCodeMidTerm\bin\Debug\DefendYourCodeMidTerm.pdb
+C:\Users\truth\source\repos\DefendYourCodeMidTerm\DefendYourCodeMidTerm\obj\Debug\DefendYourCodeMidTerm.csprojResolveAssemblyReference.cache
+C:\Users\truth\source\repos\DefendYourCodeMidTerm\DefendYourCodeMidTerm\obj\Debug\DefendYourCodeMidTerm.csproj.CoreCompileInputs.cache
+C:\Users\truth\source\repos\DefendYourCodeMidTerm\DefendYourCodeMidTerm\obj\Debug\DefendYourCodeMidTerm.exe
+C:\Users\truth\source\repos\DefendYourCodeMidTerm\DefendYourCodeMidTerm\obj\Debug\DefendYourCodeMidTerm.pdb
