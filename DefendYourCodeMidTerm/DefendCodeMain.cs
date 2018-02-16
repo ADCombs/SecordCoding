@@ -9,12 +9,18 @@ namespace DefendYourCodeMidTerm
     partial class DefendCodeMain
     {
         private static string _name;
-        private static Regex _regexName;
+        private static Regex _regexNameMatcher;
         private static int _numOne;
         private static int _numTwo;
         private static string _fileInputName;
         private static string _fileOutputName;
-       
+
+        // Pattern for matching the file input stream
+        // Makes sure that the file that is entered only lives within the debug/bin folder of program location
+        // Example of accepted patterns: test.txt, te-st.txt, -test .txt, te st.txt, te- st.txt
+        // Example of not acceptable input: /test.txt, c\\:test.txt, t3st.txt
+        private static string _fileNamePattern = @"^([A-Z]|[a-z]|\.| |\-)*.txt$";
+
 
         /// <summary>
         /// Logs all errors that happen in system to a log file
@@ -92,7 +98,7 @@ namespace DefendYourCodeMidTerm
             string namePattern = @"^([a-z]|[A-Z]|-){1,50}$";
             string inputFirstName;
             string inputLastName;
-            _regexName = new Regex(namePattern);
+            _regexNameMatcher = new Regex(namePattern);
 
             Console.WriteLine("Please input a first name: " +
                               "first name can be no longer than 50 characters, " +
@@ -100,7 +106,7 @@ namespace DefendYourCodeMidTerm
 
             inputFirstName = Console.ReadLine();
 
-            while (inputFirstName != null && !_regexName.IsMatch(inputFirstName))
+            while (inputFirstName != null && !_regexNameMatcher.IsMatch(inputFirstName))
             {
                 Console.WriteLine("Invalid name entry. Please input a valid entry");
                 ErrorLogFile($"Warning: Bad input data during name collection {DateTime.Now}");
@@ -112,7 +118,7 @@ namespace DefendYourCodeMidTerm
 
             inputLastName = Console.ReadLine();
 
-            while (inputLastName != null && !_regexName.IsMatch((inputLastName)))
+            while (inputLastName != null && !_regexNameMatcher.IsMatch((inputLastName)))
             {
                 Console.WriteLine("Invalid name entry. Please input a valid entry");
                 ErrorLogFile($"Warning: Bad input data during name collection {DateTime.Now}");
@@ -171,18 +177,15 @@ namespace DefendYourCodeMidTerm
         {
             string inputFileName = "";
 
-            // Pattern for matching the file input stream
-            // Makes sure that the file that is entered only lives within the namespace of 
-            string inputFilePattern = @"^([A-Z]|[a-z]|\.| |\-)*.txt$";
             Console.WriteLine("Enter a valid input file. File must be a .txt extension and must be within debug/bin" +
                               "File must also be readable.");
 
             do
             {
                 inputFileName = Console.ReadLine();
-                _regexName = new Regex(inputFilePattern);
+                _regexNameMatcher = new Regex(_fileNamePattern);
 
-                while ((inputFileName != null && !File.Exists(inputFileName)) || !_regexName.IsMatch(inputFileName))
+                while ((inputFileName != null && !File.Exists(inputFileName)) || !_regexNameMatcher.IsMatch(inputFileName))
                 {
                     Console.WriteLine("File does not exist or does not match valid input");
                     inputFileName = Console.ReadLine();
@@ -194,11 +197,36 @@ namespace DefendYourCodeMidTerm
             _fileInputName = inputFileName;
         }
 
+        public static void UserOutputFile()
+        {
+            string outputFileName = "";
+
+            Console.WriteLine("Enter a valid existing output file. File Must exist within debug/bin and must be a .txt extension." +
+                              "File must be able to be readable and writable.");
+
+            do
+            {
+                outputFileName = Console.ReadLine();
+                _regexNameMatcher = new Regex(_fileNamePattern);
+
+                while ((outputFileName != null && !File.Exists(outputFileName)) || !_regexNameMatcher.IsMatch(outputFileName))
+                {
+                    Console.WriteLine("File does not exist or does not match valid input");
+                    outputFileName = Console.ReadLine();
+                    ErrorLogFile($"Warning: Invalid name type detected {DateTime.Now}");
+                }
+
+            } while (!GiveFilePermissions(Path.GetFullPath(outputFileName)));
+
+            _fileOutputName = outputFileName;
+        }
+
         static void Main(string[] args)
         {
-            UserInputName();
-            UserInputIntegers();
-            UserInputFile();
+            //UserInputName();
+            //UserInputIntegers();
+            //UserInputFile();
+            UserOutputFile();
         }
     }
 }
