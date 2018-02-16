@@ -1,7 +1,8 @@
 ﻿using System;
 using System.IO;
+using System.Security;
 using System.Text.RegularExpressions;
-// ReSharper disable All
+using System.Security.Permissions;
 
 namespace DefendYourCodeMidTerm
 {
@@ -13,11 +14,7 @@ namespace DefendYourCodeMidTerm
         private static int _numTwo;
         private static string _fileInputName;
         private static string _fileOutputName;
-        
-        // Pattern to match a name that is at least 1 character long to 50 characters max
-        // and can contain as many hyphens as wanted. Will not accept numbers or 
-        // special characters
-        private const string NAMEPATTERN = @"^([a-z]|[A-Z]|-){1,50}$";
+       
 
         /// <summary>
         /// Logs all errors that happen in system to a log file
@@ -48,12 +45,37 @@ namespace DefendYourCodeMidTerm
             }
             catch (System.OverflowException e)
             {
-                ErrorLogFile("Error: " + e.ToString() + DateTime.Now);
+                ErrorLogFile($"Error: {e.ToString()} {DateTime.Now}");
                 Console.WriteLine("Overflow detected");
                 overflow = true;
             }
 
             return overflow;
+        }
+
+        /// <summary>
+        /// Allows access to current file to read and write to it
+        /// </summary>
+        /// <param name="absoluteFilePath"></param>
+        /// <returns> returns true if permissions were set to allow access else false</returns>
+        private static bool GiveFilePermissions(string absoluteFilePath)
+        {
+            var filePermission = new FileIOPermission(FileIOPermissionAccess.AllAccess, absoluteFilePath);
+            var isFilePermissionsSet = true;
+            
+
+            try
+            {
+                filePermission.Demand();
+            }
+            catch (SecurityException e)
+            {
+                ErrorLogFile($"Error: {e.ToString()} {DateTime.Now}");
+                Console.WriteLine("Error in giving permissions");
+                isFilePermissionsSet = false;
+            }
+
+            return isFilePermissionsSet;
         }
 
         /// <summary>
@@ -64,9 +86,13 @@ namespace DefendYourCodeMidTerm
         /// </summary>
         public static void UserInputName()
         {
+            // Pattern to match a name that is at least 1 character long to 50 characters max
+            // and can contain as many hyphens as wanted. Will not accept numbers or 
+            // special characters
+            string namePattern = @"^([a-z]|[A-Z]|-){1,50}$";
             string inputFirstName;
             string inputLastName;
-            _regexName = new Regex(NAMEPATTERN);
+            _regexName = new Regex(namePattern);
 
             Console.WriteLine("Please input a first name: " +
                               "first name can be no longer than 50 characters, " +
@@ -77,7 +103,7 @@ namespace DefendYourCodeMidTerm
             while (inputFirstName != null && !_regexName.IsMatch(inputFirstName))
             {
                 Console.WriteLine("Invalid name entry. Please input a valid entry");
-                ErrorLogFile("Warning: Bad input data during name collection" + DateTime.Now);
+                ErrorLogFile($"Warning: Bad input data during name collection {DateTime.Now}");
             }
 
             Console.WriteLine("Please input a last name: " +
@@ -89,7 +115,7 @@ namespace DefendYourCodeMidTerm
             while (inputLastName != null && !_regexName.IsMatch((inputLastName)))
             {
                 Console.WriteLine("Invalid name entry. Please input a valid entry");
-                ErrorLogFile("Warning: Bad input data during name collection" + DateTime.Now);
+                ErrorLogFile($"Warning: Bad input data during name collection {DateTime.Now}");
                 inputLastName = Console.ReadLine();
             }
 
@@ -115,7 +141,7 @@ namespace DefendYourCodeMidTerm
                 while (!int.TryParse(input, out numOne) || input == null)
                 {
                     Console.WriteLine("Invalid input");
-                    ErrorLogFile("Warning: Invalid input detected" + DateTime.Now);
+                    ErrorLogFile($"Warning: Invalid input detected {DateTime.Now}");
                     input = Console.ReadLine();
                 }
 
@@ -126,7 +152,7 @@ namespace DefendYourCodeMidTerm
                 while (!int.TryParse(input, out numTwo) || input == null)
                 {
                     Console.WriteLine("Invalid input");
-                    ErrorLogFile("Warning: Invalid input detected" + DateTime.Now);
+                    ErrorLogFile($"Warning: Invalid input detected {DateTime.Now}");
                     input = Console.ReadLine();
                 }
 
@@ -143,13 +169,36 @@ namespace DefendYourCodeMidTerm
         /// </summary>
         public static void UserInputFile()
         {
+            string inputFileName = "";
 
+            // Pattern for matching the file input stream
+            // Makes sure that the file that is entered only lives within the namespace of 
+            string inputFilePattern = @"^([A-Z]|[a-z]|\.| |\-)*.txt$";
+            Console.WriteLine("Enter a valid input file. File must be a .txt extension and must be within debug/bin" +
+                              "File must also be readable.");
+
+            do
+            {
+                inputFileName = Console.ReadLine();
+                _regexName = new Regex(inputFilePattern);
+
+                while ((inputFileName != null && !File.Exists(inputFileName)) || !_regexName.IsMatch(inputFileName))
+                {
+                    Console.WriteLine("File does not exist or does not match valid input");
+                    inputFileName = Console.ReadLine();
+                    ErrorLogFile($"Warning: Invalid name type detected {DateTime.Now}");
+                }
+
+            } while (!GiveFilePermissions(Path.GetFullPath(inputFileName)));
+
+            _fileInputName = inputFileName;
         }
 
         static void Main(string[] args)
         {
-            //UserInputName();
+            UserInputName();
             UserInputIntegers();
+            UserInputFile();
         }
     }
 }
