@@ -95,7 +95,7 @@ namespace DefendYourCodeMidTerm
             // Pattern to match a name that is at least 1 character long to 50 characters max
             // and can contain as many hyphens as wanted. Will not accept numbers or 
             // special characters
-            string namePattern = @"^([a-z]|[A-Z]|-){1,50}$";
+            string namePattern = @"^([a-z]|[A-Z]|\-){1,50}$";
             string inputFirstName;
             string inputLastName;
             _regexNameMatcher = new Regex(namePattern);
@@ -223,7 +223,7 @@ namespace DefendYourCodeMidTerm
 
         static void Main(string[] args)
         {
-            //UserInputName();
+            UserInputName();
             //UserInputIntegers();
             //UserInputFile();
             UserOutputFile();
