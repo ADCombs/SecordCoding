@@ -122,9 +122,25 @@ void gather_ints_from_user()
             validInput = regexec(&regex,input,0,NULL,0);
         }
 
-        numOne = (int)strtol(input, NULL, 10);
+        numOne = (int)strtol(input, NULL, 10); // come back to 
 
-    }while(is_safe_add(numOne, numTwo) != INT_OVERFLOW);
+        printf("Input another Integer. Value MUST be less than -2,147,483,647 or greater than 2,147,483,647 ");
+        fgets(input, 10, stdin);
+
+        validInput = regexec(&regex,input,0,NULL,0);
+
+            while(validInput == REG_NOMATCH)
+        {
+            printf("Invalid input. Try again ");
+            fgets(input, 10, stdin);
+            remove_new_line(input);
+
+            validInput = regexec(&regex,input,0,NULL,0);
+        }
+
+        numTwo = (int)strtol(input, NULL, 10);
+
+    }while(is_safe_add(numOne, numTwo) == INT_OVERFLOW);
 
 }
 
