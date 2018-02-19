@@ -4,11 +4,18 @@
 #include <ctype.h>
 #include <regex.h>
 #include <limits.h>
+#include <errno.h>
+#include <stdio_ext.h>
 
 char * _firstName;
 regex_t regex;
 char * _lastName;
 const int INT_OVERFLOW = 1;
+
+void freeMemory();
+int is_numbers_valid_range(char *);
+
+
 
 void error_log(char * error)
 {
@@ -20,6 +27,7 @@ void error_log(char * error)
     if(errorLog == NULL)
     {
         printf("Can't open errorlog.txt program terminated ");
+        freeMemory();
         exit(1);
     }
     else
@@ -37,6 +45,7 @@ void remove_new_line(char * input)
         *p = '\0';
 }
 
+
 int is_safe_add(int a, int b)
 {
     if(a > 0 && b > INT_MAX - a)
@@ -45,6 +54,17 @@ int is_safe_add(int a, int b)
         return 1;
     else 
         return 0;
+}
+
+int is_numbers_valid_range(char * input)
+{
+    char **end = NULL;
+    int intBase = 36;
+    strtol(input, end, intBase);
+
+    if(errno == ERANGE)
+        return 0;
+    return 1; 
 }
 
 void readName()
@@ -61,7 +81,7 @@ void readName()
     correctInputMatch = regexec(&regex,input,0,NULL,0);
 
 
-    while(correctInputMatch == REG_NOMATCH)
+    while(correctInputMatch == REG_NOMATCH || !is_numbers_valid_range(input))
     {
         printf("Invalid input try again ");
         fgets(input,50,stdin);
@@ -110,26 +130,28 @@ void gather_ints_from_user()
         printf("Input an integer. Value MUST be less than -2,147,483,647 or greater than 2,147,483,647 ");
         fgets(input, 10, stdin);
         remove_new_line(input);
-
-        validInput = regexec(&regex,input,0,NULL,0);
-
-        while(validInput == REG_NOMATCH)
+        __fpurge(stdin);
+       validInput = regexec(&regex,input,0,NULL,0);
+        
+        while(validInput == REG_NOMATCH || !is_numbers_valid_range(input))
         {
             printf("Invalid input. Try again ");
             fgets(input, 10, stdin);
             remove_new_line(input);
 
             validInput = regexec(&regex,input,0,NULL,0);
+            
         }
 
         numOne = (int)strtol(input, NULL, 10); // come back to 
 
         printf("Input another Integer. Value MUST be less than -2,147,483,647 or greater than 2,147,483,647 ");
         fgets(input, 10, stdin);
+        remove_new_line(input);
 
         validInput = regexec(&regex,input,0,NULL,0);
 
-            while(validInput == REG_NOMATCH)
+        while(validInput == REG_NOMATCH)
         {
             printf("Invalid input. Try again ");
             fgets(input, 10, stdin);
@@ -143,7 +165,6 @@ void gather_ints_from_user()
     }while(is_safe_add(numOne, numTwo) == INT_OVERFLOW);
 
 }
-
 
 void freeMemory()
 {
