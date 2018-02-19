@@ -6,3 +6,6 @@ Warning: Invalid input detected2/14/2018 3:40:03 PM
 Error: System.OverflowException: Arithmetic operation resulted in an overflow.
    at DefendYourCodeMidTerm.DefendCodeMain.IsIntegerOverflow(Int32 numOne, Int32 numTwo) in C:\Users\truth\source\repos\DefendYourCodeMidTerm\DefendYourCodeMidTerm\DefendCodeMain.cs:line 362/14/2018 3:40:15 PM
 Warning: Invalid name type detected 2/17/2018 11:49:37 AM
+Warning: Invalid name type detected 2/19/2018 2:55:42 PM
+Warning: Invalid name type detected 2/19/2018 2:55:51 PM
+Warning: Invalid name type detected 2/19/2018 2:56:36 PM

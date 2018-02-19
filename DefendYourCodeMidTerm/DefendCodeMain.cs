@@ -19,7 +19,7 @@ namespace DefendYourCodeMidTerm
         // Makes sure that the file that is entered only lives within the debug/bin folder of program location
         // Example of accepted patterns: test.txt, te-st.txt, -test .txt, te st.txt, te- st.txt
         // Example of not acceptable input: /test.txt, c\\:test.txt, t3st.txt
-        private static string _fileNamePattern = @"^([A-Z]|[a-z]|\.| |\-)*.txt$";
+        private static string _fileNamePattern = @"^([A-Z]|[a-z]|\.| |\-)*\.txt$"; // A better regex (imo) would be: ^[\w\. \-]+\.txt$
 
 
         /// <summary>
