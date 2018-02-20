@@ -306,11 +306,13 @@ namespace DefendYourCodeMidTerm
                     true,
                     false);
 
-                StreamReader reader = new StreamReader(Path.GetFullPath(_fileInputName));
+                StreamReader reader = new StreamReader(Path.GetFullPath(_fileInputName), System.Text.Encoding.UTF8, true, 512);
                 StreamWriter writer = new StreamWriter(Path.GetFullPath(_fileOutputName), append: true);
 
                 string line;
+                
                 while ((line = reader.ReadLine()) != null)
+
                 {
                     writer.WriteLine(line);
                 }
@@ -382,12 +384,12 @@ namespace DefendYourCodeMidTerm
 
         static void Main(string[] args)
         {
-            //UserInputName();
+            UserInputName();
             UserInputIntegers();
-            //UserInputFile();
-            //UserOutputFile();
-            UserInputPassword();
-            //OutputToFile();
+            UserInputFile();
+            UserOutputFile();
+            //UserInputPassword();
+            OutputToFile();
         }
     }
 }
