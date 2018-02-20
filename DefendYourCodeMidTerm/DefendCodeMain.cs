@@ -143,7 +143,7 @@ namespace DefendYourCodeMidTerm
             int numOne = 0;
             int numTwo = 0;
             int results = 0;
-            string input = "";
+            string input = string.Empty;
 
             do
             {
@@ -198,7 +198,7 @@ namespace DefendYourCodeMidTerm
         /// </summary>
         public static void UserInputFile()
         {
-            string fileInputName = "";
+            string fileInputName = string.Empty;
 
             //Console.WriteLine("Enter a valid input file. File must be a .txt extension and must be within debug/bin. File must also be readable.");
 
@@ -230,7 +230,7 @@ namespace DefendYourCodeMidTerm
 
         public static void UserOutputFile()
         {
-            string fileOutputName = "";
+            string fileOutputName = string.Empty;
 
             //Console.WriteLine("Enter a valid output file. File must be a .txt extension and must be within debug/bin.  File must be able to be readable and writable.");
 
@@ -287,21 +287,53 @@ namespace DefendYourCodeMidTerm
             GetUserInput(prompt, _passwordPatternRegex);
         }
 
-        public static void OutputToFile()
+        /// <summary>
+        /// Per assignment requirements:
+        /// Opens the output file and writes the user's name along with the result of 
+        /// adding the two integer values and the result of multiplying the two integer values, 
+        /// followed by the contents of the input file
+        /// </summary>
+        private static void OutputToFile()
         {
-            FileController.WriteToFile(_fileOutputName, "Testing File Controller WriteToFile method...", append: false);
-            FileController.WriteToFile(_fileOutputName, "\r\nTesting Successful!");
+            int addInts = _numOne + _numTwo;
+            int multInts = _numOne * _numTwo;
+            try
+            {
+                FileController.WriteToFile(
+                    _fileOutputName,
+                    _name + " " + "Added: " + addInts + " Muliplied: " + multInts + "\n",
+                    string.Empty,
+                    true,
+                    false);
+
+                StreamReader reader = new StreamReader(Path.GetFullPath(_fileInputName));
+                StreamWriter writer = new StreamWriter(Path.GetFullPath(_fileOutputName), append: true);
+
+                string line;
+                while ((line = reader.ReadLine()) != null)
+                {
+                    writer.WriteLine(line);
+                }
+
+                reader.Close();
+                writer.Close();
+            }
+            catch (Exception e)
+            {
+                ErrorLogFile(
+                    $"Warning: An Error occured during the FileInAndOut method at {DateTime.Now}\n" + e.Message);
+            }
         }
 
         private static string GetUserInput(string prompt, string regex)
         {
             Regex regexMatcher = new Regex(regex);
-            string ret = "";
+            string ret = string.Empty;
 
             Console.WriteLine(prompt);
             ret = Console.ReadLine();
 
-            while (ret == null || ret == "" || !regexMatcher.IsMatch(ret))
+            while (ret == null || ret == string.Empty || !regexMatcher.IsMatch(ret))
             {
                 Console.WriteLine("Invalid entry. Please input a valid entry");
                 ErrorLogFile($"Warning: Bad input data during name collection {DateTime.Now}");
@@ -315,7 +347,7 @@ namespace DefendYourCodeMidTerm
 
         private static string GetHashSHA256(string input, ref byte[] salt)
         {
-            if (input == null || input == "")
+            if (input == null || input == string.Empty)
                 return null;
             
             byte[] hash;
