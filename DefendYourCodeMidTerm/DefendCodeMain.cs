@@ -3,6 +3,9 @@ using System.IO;
 using System.Security;
 using System.Text.RegularExpressions;
 using System.Security.Permissions;
+using System.Security.Cryptography;
+using System.Text;
+using System.Collections.Generic;
 
 namespace DefendYourCodeMidTerm
 {
@@ -21,6 +24,7 @@ namespace DefendYourCodeMidTerm
         // Example of not acceptable input: /test.txt, c\\:test.txt, t3st.txt
         // Andrew's Regex: ^([A-Z]|[a-z]|\.| |\-)*\.txt$
         private static string _fileNamePattern = @"^\w+(?:[\. -]\w+)*\.txt$"; // This new regex allows for alphanumeric, spaces, hypens, and periods. However spaces, hypens, and periods must come between at least two alphanumberics, for example a.a.txt is valid, but a..txt is not and ..txt is not either.
+        private static string _passwordPatternRegex = @"(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[!@%\^&\*])(?=^[\w!@%\^&\*]{8,24}$)";
 
 
         /// <summary>
@@ -136,8 +140,9 @@ namespace DefendYourCodeMidTerm
         /// </summary>
         public static void UserInputIntegers()
         {
-            int numOne;
-            int numTwo;
+            int numOne = 0;
+            int numTwo = 0;
+            int results = 0;
             string input = "";
 
             do
@@ -154,8 +159,15 @@ namespace DefendYourCodeMidTerm
                 }*/
                 input = GetUserInput("Input an integer that is between " + int.MinValue + " and " + int.MaxValue, @"^[+\-]?\d{1,10}$");
 
+                while (!int.TryParse(input, out results))
+                {
+                    Console.WriteLine("Input was not between " + int.MinValue + " and " + int.MaxValue);
+                    input = GetUserInput("Input an integer that is between " + int.MinValue + " and " + int.MaxValue, @"^[+\-]?\d{1,10}$");
+                }
+
                 numOne = int.Parse(input);
 
+                
                 /*input = Console.ReadLine();
 
                 while (!int.TryParse(input, out numTwo) || input == null)
@@ -166,7 +178,14 @@ namespace DefendYourCodeMidTerm
                 }*/
                 input = GetUserInput("Input an integer that is between " + int.MinValue + " and " + int.MaxValue, @"^[+\-]?\d{1,10}$");
 
+                while (!int.TryParse(input, out results))
+                {
+                    Console.WriteLine("Input was not between " + int.MinValue + " and " + int.MaxValue);
+                    input = GetUserInput("Input an integer that is between " + int.MinValue + " and " + int.MaxValue, @"^[+\-]?\d{1,10}$");
+                }
+
                 numTwo = int.Parse(input);
+
             } while (IsIntegerOverflow(numOne, numTwo));
 
             _numOne = numOne;
@@ -236,8 +255,36 @@ namespace DefendYourCodeMidTerm
 
         private static void UserInputPassword()
         {
-            Console.WriteLine("Enter a password between 8 and 24 characters, with no spaces, only alphanumeric characters, and the following special characters: ! @ % ^ & *" +
-                              "\r\nThe password must contain at least one uppercase letter, one lowercase letter, one number, and one special character.");
+            string prompt = "Enter a password between 8 and 24 characters, with no spaces, only alphanumeric characters, and the following special characters: ! @ % ^ & *" +
+                              "\r\nThe password must contain at least one uppercase letter, one lowercase letter, one number, and one special character.";
+
+            
+            //SHA256 sha256 = SHA256.Create();
+
+            byte[] salt = new byte[32];
+
+            Console.WriteLine(GetHashSHA256(GetUserInput(prompt, _passwordPatternRegex), ref salt));
+
+            //Console.WriteLine(BytesToString(salt));
+
+            string tStr = Encoding.ASCII.GetString(salt);
+            byte[] temp = Encoding.ASCII.GetBytes(tStr);
+
+            foreach(byte bt in salt)
+            {
+                Console.WriteLine(bt);
+            }
+
+            
+
+            Console.WriteLine(tStr);
+
+            foreach (byte bt in salt)
+            {
+                Console.WriteLine(bt);
+            }
+
+            GetUserInput(prompt, _passwordPatternRegex);
         }
 
         public static void OutputToFile()
@@ -266,14 +313,49 @@ namespace DefendYourCodeMidTerm
             return ret;
         }
 
+        private static string GetHashSHA256(string input, ref byte[] salt)
+        {
+            if (input == null || input == "")
+                return null;
+            
+            byte[] hash;
+            SHA256 sha = SHA256.Create();
+            RNGCryptoServiceProvider rngProvider = new RNGCryptoServiceProvider();
+            
+            List<byte> pass = new List<byte>(Encoding.Unicode.GetBytes(input));
+            
+            rngProvider.GetNonZeroBytes(salt);
+
+            pass.AddRange(salt);
+
+            hash = sha.ComputeHash(pass.ToArray());
+
+            return BytesToString(hash);
+        }
+
+        private static string BytesToString(byte[] bytes)
+        {
+            if (bytes == null || bytes.Length == 0)
+                return null;
+
+            StringBuilder sBuilder = new StringBuilder();
+
+            for (int i = 0; i < bytes.Length; i++)
+            {
+                sBuilder.Append(bytes[i].ToString("x2"));
+            }
+
+            return sBuilder.ToString();
+        }
+
         static void Main(string[] args)
         {
-            UserInputName();
+            //UserInputName();
             UserInputIntegers();
-            UserInputFile();
-            UserOutputFile();
+            //UserInputFile();
+            //UserOutputFile();
             UserInputPassword();
-            OutputToFile();
+            //OutputToFile();
         }
     }
 }

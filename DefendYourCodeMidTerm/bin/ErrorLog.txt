@@ -1600,3 +1600,13 @@ Error: System.OverflowException: Arithmetic operation resulted in an overflow.
    at DefendYourCodeMidTerm.DefendCodeMain.IsIntegerOverflow(Int32 numOne, Int32 numTwo) in C:\Users\Tyelor\Desktop\Secure Coding Repos\SecordCoding\DefendYourCodeMidTerm\DefendCodeMain.cs:line 51 2/19/2018 6:01:22 PM
 Error: System.OverflowException: Arithmetic operation resulted in an overflow.
    at DefendYourCodeMidTerm.DefendCodeMain.IsIntegerOverflow(Int32 numOne, Int32 numTwo) in C:\Users\Tyelor\Desktop\Secure Coding Repos\SecordCoding\DefendYourCodeMidTerm\DefendCodeMain.cs:line 51 2/19/2018 6:01:35 PM
+Warning: Bad input data during name collection 2/19/2018 6:27:10 PM
+Warning: Bad input data during name collection 2/19/2018 6:27:14 PM
+Warning: Bad input data during name collection 2/19/2018 6:27:18 PM
+Error: System.OverflowException: Arithmetic operation resulted in an overflow.
+   at DefendYourCodeMidTerm.DefendCodeMain.IsIntegerOverflow(Int32 numOne, Int32 numTwo) in C:\Users\Tyelor\Desktop\Secure Coding Repos\SecordCoding\DefendYourCodeMidTerm\DefendCodeMain.cs:line 55 2/19/2018 7:43:17 PM
+Error: System.OverflowException: Arithmetic operation resulted in an overflow.
+   at DefendYourCodeMidTerm.DefendCodeMain.IsIntegerOverflow(Int32 numOne, Int32 numTwo) in C:\Users\Tyelor\Desktop\Secure Coding Repos\SecordCoding\DefendYourCodeMidTerm\DefendCodeMain.cs:line 55 2/19/2018 7:44:30 PM
+Warning: Bad input data during name collection 2/19/2018 7:49:50 PM
+Error: System.OverflowException: Arithmetic operation resulted in an overflow.
+   at DefendYourCodeMidTerm.DefendCodeMain.IsIntegerOverflow(Int32 numOne, Int32 numTwo) in C:\Users\Tyelor\Desktop\Secure Coding Repos\SecordCoding\DefendYourCodeMidTerm\DefendCodeMain.cs:line 55 2/19/2018 7:52:45 PM
