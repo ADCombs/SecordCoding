@@ -12,6 +12,7 @@ char * _lastName;
 int _numOne;
 int _numTwo;
 const int INT_OVERFLOW = 1;
+char * _inputFileName;
 
 void freeMemory();
 int is_numbers_valid_range(char *);
@@ -152,7 +153,7 @@ void gather_ints_from_user()
 
     do
     {
-        printf("Input an integer. Value MUST be less than -2,147,483,647 or greater than 2,147,483,647: ");
+        printf("Input an integer. Value MUST be less than %d or greater than %d: ", INT_MIN, INT_MAX);
         fgets(input, 11, stdin);
         remove_new_line(input);
         
@@ -173,7 +174,7 @@ void gather_ints_from_user()
         
         buffer_clear();
 
-        printf("Input another Integer. Value MUST be less than -2,147,483,647 or greater than 2,147,483,647: ");
+        printf("Input another Integer. Value MUST be less than %d or greater than %d: ", INT_MIN, INT_MAX);
         fgets(input, 10, stdin);
         remove_new_line(input);
 
@@ -197,6 +198,50 @@ void gather_ints_from_user()
 
     _numOne = numOne;
     _numTwo = numTwo;
+
+     regfree(&regex);
+}
+
+void gather_user_input_file()
+{
+    int validInput;
+    char input[265];
+    int maxFileName = 265; // As part of windows standards, files must be at minimum 260 length; plus the extension of .txt; plus the null terminator
+
+    validInput = regcomp(&regex, "^(\\w){1,264}$", REG_EXTENDED); 
+    if(validInput ){printf("no work "); exit(1);}
+
+    printf("Enter a valid input file. File must be a .txt extension and must be within the same folder as program. File must be readable: ");
+    fgets(input, maxFileName, stdin);
+    remove_new_line(input);
+
+    while(validInput == REG_NOMATCH)
+    {
+        printf("Invalid input. Try again: ");
+        fgets(input, maxFileName, stdin);
+        remove_new_line(input);
+    }
+}
+
+void gather_user_output_file()
+{
+        int validInput;
+    char input[265];
+    int maxFileName = 265; // As part of windows standards, files must be at minimum 260 length; plus the extension of .txt; plus the null terminator
+
+    validInput = regcomp(&regex, "^(\\w){1,264}$", REG_EXTENDED); 
+    if(validInput ){printf("no work "); exit(1);}
+
+    printf("Enter a valid input file. File must be a .txt extension and must be within the same folder as program. File must be readable: ");
+    fgets(input, maxFileName, stdin);
+    remove_new_line(input);
+
+    while(validInput == REG_NOMATCH)
+    {
+        printf("Invalid input. Try again: ");
+        fgets(input, maxFileName, stdin);
+        remove_new_line(input);
+    }
 }
 
 
@@ -204,8 +249,10 @@ void freeMemory()
 {
     free(_firstName);
     free(_lastName);
+    free(_inputFileName);
     regfree(&regex);
 
+    _inputFileName = NULL;
     _lastName = NULL;
     _firstName = NULL;
 }
@@ -213,8 +260,9 @@ void freeMemory()
 
 int main()
 {
-    readName();
-    gather_ints_from_user();
+    //readName();
+    //gather_ints_from_user();
+    gather_user_input_file();
     freeMemory();
     return 0;
 }
