@@ -209,7 +209,7 @@ namespace DefendYourCodeMidTerm
                 outputFileName = Console.ReadLine();
                 _regexNameMatcher = new Regex(_fileNamePattern);
 
-                while ((outputFileName != null && !File.Exists(outputFileName)) || !_regexNameMatcher.IsMatch(outputFileName))
+                while (outputFileName == null || outputFileName == "" /*&& !File.Exists(outputFileName))*/ || !_regexNameMatcher.IsMatch(outputFileName))
                 {
                     Console.WriteLine("File does not exist or does not match valid input");
                     outputFileName = Console.ReadLine();
@@ -219,6 +219,9 @@ namespace DefendYourCodeMidTerm
             } while (!GiveFilePermissions(Path.GetFullPath(outputFileName)));
 
             _fileOutputName = outputFileName;
+
+            FileController.WriteToFile(outputFileName, "Testing File Controller WriteToFile method...", append: false);
+            FileController.WriteToFile(outputFileName, "\r\nTesting Successful!");
         }
 
         static void Main(string[] args)

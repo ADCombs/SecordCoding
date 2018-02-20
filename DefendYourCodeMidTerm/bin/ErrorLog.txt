@@ -9,3 +9,4 @@ Warning: Invalid name type detected 2/17/2018 11:49:37 AM
 Warning: Invalid name type detected 2/19/2018 2:55:42 PM
 Warning: Invalid name type detected 2/19/2018 2:55:51 PM
 Warning: Invalid name type detected 2/19/2018 2:56:36 PM
+Warning: Bad input data during name collection 2/19/2018 3:33:23 PM
