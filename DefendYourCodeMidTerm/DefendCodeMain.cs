@@ -6,6 +6,7 @@ using System.Security.Permissions;
 using System.Security.Cryptography;
 using System.Text;
 using System.Collections.Generic;
+using System.Numerics;
 
 namespace DefendYourCodeMidTerm
 {
@@ -13,8 +14,8 @@ namespace DefendYourCodeMidTerm
     {
         private static string _name;
         private static Regex _regexNameMatcher;
-        private static int _numOne;
-        private static int _numTwo;
+        private static BigInteger _numOne;
+        private static BigInteger _numTwo;
         private static string _fileInputName;
         private static string _fileOutputName;
 
@@ -45,23 +46,12 @@ namespace DefendYourCodeMidTerm
         /// <param name="numOne"></param>
         /// <param name="numTwo"></param>
         /// <returns></returns>
-        private static bool IsIntegerOverflow(int numOne, int numTwo)
+        private static void CalculateIntegers(int numOne, int numTwo)
         {
-            bool overflow = false;
-
-            try
-            {
-                int sumAdd = checked(numOne + numTwo);
-                int sumTimes = checked(numOne * numTwo);
-            }
-            catch (System.OverflowException e)
-            {
-                ErrorLogFile($"Error: {e.ToString()} {DateTime.Now}");
-                Console.WriteLine("Overflow detected");
-                overflow = true;
-            }
-
-            return overflow;
+            BigInteger intone = numOne;
+            BigInteger inttwo = numTwo;
+            _numOne = intone + inttwo;
+            _numTwo = intone * inttwo;
         }
 
         /// <summary>
@@ -145,8 +135,6 @@ namespace DefendYourCodeMidTerm
             int results = 0;
             string input = string.Empty;
 
-            do
-            {
                 /*Console.WriteLine(
                     "Input integer values that are less than 2,147,483,647. Integers must be input one at a time");
                 input = Console.ReadLine();
@@ -186,10 +174,7 @@ namespace DefendYourCodeMidTerm
 
                 numTwo = int.Parse(input);
 
-            } while (IsIntegerOverflow(numOne, numTwo));
-
-            _numOne = numOne;
-            _numTwo = numTwo;
+            CalculateIntegers(numOne, numTwo);
         }
 
         /// <summary>
@@ -286,13 +271,11 @@ namespace DefendYourCodeMidTerm
         /// </summary>
         private static void OutputToFile()
         {
-            int addInts = _numOne + _numTwo;
-            int multInts = _numOne * _numTwo;
             try
             {
                 FileController.WriteToFile(
                     _fileOutputName,
-                    _name + " " + "Added: " + addInts + " Muliplied: " + multInts + "\n",
+                    _name + " " + "Added: " + _numOne + " Muliplied: " + _numTwo + "\n",
                     string.Empty,
                     true,
                     false);
@@ -378,6 +361,7 @@ namespace DefendYourCodeMidTerm
             UserOutputFile();
             UserInputPassword();
             OutputToFile();
+            Console.ReadLine();
         }
     }
 }
