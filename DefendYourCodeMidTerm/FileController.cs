@@ -24,7 +24,7 @@ namespace DefendYourCodeMidTerm
     /// </summary>
     public static class FileController
     {
-        
+
         /// ==========================================================================================================================
         /// <summary>
         /// This method takes in several parameters, the first two being required and the last three being optional.
@@ -40,8 +40,11 @@ namespace DefendYourCodeMidTerm
         /// <param name="path">[Optional Param]The path that file is located at. Set to "" as default.</param>
         /// <param name="create">[Optional Param]Determines if the output file should be created if it doesn't exist. Set to true as default.</param>
         /// <param name="append">[Optional Param]Determines if the text should be appended to the output or overwritten. Set to true as default.</param>
+        /// <param name="hidden">[Optional Param]Determines if the file should be set to hidden. Set to false as default.</param>
+        /// <param name="noWrite">[Optional Param]Determines if the file should be set to read-only. Set to false as default.</param>
+        /// <param name="encrypted">[Optional Param]Determines if the file should be set to be encrypted. Set to false as default.</param>
         /// ==========================================================================================================================
-        public static void WriteToFile(string filename, string text, string path = "", bool create = true, bool append = true)
+        public static void WriteToFile(string filename, string text, string path = "", bool create = true, bool append = true, bool hidden = false, bool noWrite = false, bool encrypted = false)
         {
             if (path != null && path != "" && !Directory.Exists(path) && create)
                 Directory.CreateDirectory(path);
@@ -50,9 +53,21 @@ namespace DefendYourCodeMidTerm
 
             if (File.Exists(fullPath) || create)
             {
+                if (File.Exists(fullPath))
+                    File.SetAttributes(fullPath, File.GetAttributes(fullPath) & ~FileAttributes.Hidden & ~FileAttributes.ReadOnly & ~FileAttributes.Encrypted);
+
                 StreamWriter writer = new StreamWriter(fullPath, append);
                 writer.Write(text);
                 writer.Close();
+
+                if (hidden)
+                    File.SetAttributes(fullPath, File.GetAttributes(fullPath) | FileAttributes.Hidden);
+
+                if (noWrite)
+                    File.SetAttributes(fullPath, File.GetAttributes(fullPath) | FileAttributes.ReadOnly);
+
+                if (encrypted)
+                    File.SetAttributes(fullPath, File.GetAttributes(fullPath) | FileAttributes.Encrypted);
             }
         }
 
@@ -76,7 +91,7 @@ namespace DefendYourCodeMidTerm
             {
                 StreamReader reader = new StreamReader(fullPath);
                 string ret = reader.ReadToEnd();
-                //Debug.Log(ret);
+
                 reader.Close();
 
                 return ret;

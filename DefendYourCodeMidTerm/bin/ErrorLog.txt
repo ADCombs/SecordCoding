@@ -1610,3 +1610,5 @@ Error: System.OverflowException: Arithmetic operation resulted in an overflow.
 Warning: Bad input data during name collection 2/19/2018 7:49:50 PM
 Error: System.OverflowException: Arithmetic operation resulted in an overflow.
    at DefendYourCodeMidTerm.DefendCodeMain.IsIntegerOverflow(Int32 numOne, Int32 numTwo) in C:\Users\Tyelor\Desktop\Secure Coding Repos\SecordCoding\DefendYourCodeMidTerm\DefendCodeMain.cs:line 55 2/19/2018 7:52:45 PM
+Warning: An Error occured during the FileInAndOut method at 2/19/2018 9:53:40 PM
+The process cannot access the file 'C:\Users\Tyelor\Desktop\Secure Coding Repos\SecordCoding\DefendYourCodeMidTerm\bin\Debug\output.txt' because it is being used by another process.

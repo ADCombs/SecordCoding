@@ -258,33 +258,24 @@ namespace DefendYourCodeMidTerm
             string prompt = "Enter a password between 8 and 24 characters, with no spaces, only alphanumeric characters, and the following special characters: ! @ % ^ & *" +
                               "\r\nThe password must contain at least one uppercase letter, one lowercase letter, one number, and one special character.";
 
-            
+
             //SHA256 sha256 = SHA256.Create();
-
+            RNGCryptoServiceProvider rngProvider = new RNGCryptoServiceProvider();
             byte[] salt = new byte[32];
+            rngProvider.GetNonZeroBytes(salt);
 
-            Console.WriteLine(GetHashSHA256(GetUserInput(prompt, _passwordPatternRegex), ref salt));
+            FileController.WriteToFile(".password.ini", GetHashSHA256(GetUserInput(prompt, _passwordPatternRegex), salt) + "\n" + Convert.ToBase64String(salt), append: false, hidden: true, noWrite: true, encrypted: true);
 
-            //Console.WriteLine(BytesToString(salt));
+            bool valid = ValidatePassword(GetUserInput("Repeat Password: ", _passwordPatternRegex));
 
-            string tStr = Encoding.ASCII.GetString(salt);
-            byte[] temp = Encoding.ASCII.GetBytes(tStr);
-
-            foreach(byte bt in salt)
+            while (!valid)
             {
-                Console.WriteLine(bt);
+                Console.WriteLine("Password was not correct.");
+
+                valid = ValidatePassword(GetUserInput("Repeat Password: ", _passwordPatternRegex));
             }
 
-            
-
-            Console.WriteLine(tStr);
-
-            foreach (byte bt in salt)
-            {
-                Console.WriteLine(bt);
-            }
-
-            GetUserInput(prompt, _passwordPatternRegex);
+            Console.WriteLine("Password was correct.");
         }
 
         /// <summary>
@@ -347,39 +338,36 @@ namespace DefendYourCodeMidTerm
             return ret;
         }
 
-        private static string GetHashSHA256(string input, ref byte[] salt)
+        private static string GetHashSHA256(string input, byte[] salt)
         {
-            if (input == null || input == string.Empty)
+            if (input == null || input == "")
                 return null;
-            
+
             byte[] hash;
-            SHA256 sha = SHA256.Create();
-            RNGCryptoServiceProvider rngProvider = new RNGCryptoServiceProvider();
-            
+            HashAlgorithm sha = SHA256.Create();
+
             List<byte> pass = new List<byte>(Encoding.Unicode.GetBytes(input));
-            
-            rngProvider.GetNonZeroBytes(salt);
 
             pass.AddRange(salt);
 
             hash = sha.ComputeHash(pass.ToArray());
 
-            return BytesToString(hash);
+            return Convert.ToBase64String(hash);
         }
 
-        private static string BytesToString(byte[] bytes)
+        private static bool ValidatePassword(string input)
         {
-            if (bytes == null || bytes.Length == 0)
-                return null;
+            if (input == null || input == "" || !FileController.FileExists(".password.ini"))
+                return false;
 
-            StringBuilder sBuilder = new StringBuilder();
+            string[] fin = FileController.ReadAsString(".password.ini").Split('\n');
 
-            for (int i = 0; i < bytes.Length; i++)
-            {
-                sBuilder.Append(bytes[i].ToString("x2"));
-            }
+            if (fin.Length != 2)
+                return false;
 
-            return sBuilder.ToString();
+            byte[] s = Convert.FromBase64String(fin[1].Trim());
+
+            return fin[0].Trim() == GetHashSHA256(input, s);
         }
 
         static void Main(string[] args)
@@ -388,7 +376,7 @@ namespace DefendYourCodeMidTerm
             UserInputIntegers();
             UserInputFile();
             UserOutputFile();
-            //UserInputPassword();
+            UserInputPassword();
             OutputToFile();
         }
     }
