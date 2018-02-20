@@ -5,16 +5,20 @@
 #include <regex.h>
 #include <limits.h>
 #include <errno.h>
-#include <stdio_ext.h>
 
 char * _firstName;
 regex_t regex;
 char * _lastName;
+int _numOne;
+int _numTwo;
 const int INT_OVERFLOW = 1;
 
 void freeMemory();
 int is_numbers_valid_range(char *);
-
+void buffer_clear();
+int is_safe_add(int,int);
+int is_safe_multiply(int,int);
+void error_log(char*);
 
 
 void error_log(char * error)
@@ -56,16 +60,36 @@ int is_safe_add(int a, int b)
         return 0;
 }
 
+
+int is_safe_multiply(int a, int b)
+{
+    if(b != 0 && a > INT_MAX/b)
+        return 1;
+    else
+        return 0;
+}
+
+
 int is_numbers_valid_range(char * input)
 {
     char **end = NULL;
-    int intBase = 36;
+    int intBase = 10;
+
     strtol(input, end, intBase);
 
     if(errno == ERANGE)
         return 0;
     return 1; 
 }
+
+
+void buffer_clear()
+{
+    printf("\n");
+    while((getchar()) != '\n');
+    
+}
+
 
 void readName()
 {
@@ -80,8 +104,7 @@ void readName()
     if(correctInputMatch ){printf("no work "); exit(1);}
     correctInputMatch = regexec(&regex,input,0,NULL,0);
 
-
-    while(correctInputMatch == REG_NOMATCH || !is_numbers_valid_range(input))
+    while(correctInputMatch == REG_NOMATCH && !is_numbers_valid_range(input))
     {
         printf("Invalid input try again ");
         fgets(input,50,stdin);
@@ -89,6 +112,7 @@ void readName()
         correctInputMatch = regexec(&regex,input,0,NULL,0);    
     }
 
+    buffer_clear();
     size_t length = strnlen(input, sizeof input);
 
     _firstName = (char*)calloc(length, sizeof(char));
@@ -99,8 +123,7 @@ void readName()
     remove_new_line(input);
     correctInputMatch = regexec(&regex,input,0,NULL,0);
 
-
-    while(correctInputMatch == REG_NOMATCH)
+    while(correctInputMatch == REG_NOMATCH && !is_numbers_valid_range(input))
     {
         printf("Invalid input try again ");
         fgets(input,50,stdin);
@@ -108,12 +131,14 @@ void readName()
         correctInputMatch = regexec(&regex,input,0,NULL,0);    
     }
 
+    buffer_clear();
     length = strnlen(input, sizeof input);
 
     _lastName = (char*)calloc(length, sizeof(char)); 
 
     regfree(&regex);
 }
+
 
 void gather_ints_from_user()
 {
@@ -122,20 +147,21 @@ void gather_ints_from_user()
     char input[10];
     int validInput;
 
-    validInput = regcomp(&regex, "^[0-9]*$", REG_EXTENDED);
+    validInput = regcomp(&regex, "^[0-9]+$", REG_EXTENDED);
     if(validInput ){printf("no work "); exit(1);}
 
     do
     {
-        printf("Input an integer. Value MUST be less than -2,147,483,647 or greater than 2,147,483,647 ");
-        fgets(input, 10, stdin);
+        printf("Input an integer. Value MUST be less than -2,147,483,647 or greater than 2,147,483,647: ");
+        fgets(input, 11, stdin);
         remove_new_line(input);
-        __fpurge(stdin);
-       validInput = regexec(&regex,input,0,NULL,0);
         
-        while(validInput == REG_NOMATCH || !is_numbers_valid_range(input))
+
+        validInput = regexec(&regex,input,0,NULL,0);
+        
+        while(validInput == REG_NOMATCH && !is_numbers_valid_range(input))
         {
-            printf("Invalid input. Try again ");
+            printf("Invalid input. Try again: ");
             fgets(input, 10, stdin);
             remove_new_line(input);
 
@@ -143,9 +169,11 @@ void gather_ints_from_user()
             
         }
 
-        numOne = (int)strtol(input, NULL, 10); // come back to 
+         numOne = (int)strtol(input, NULL, 10);
+        
+        buffer_clear();
 
-        printf("Input another Integer. Value MUST be less than -2,147,483,647 or greater than 2,147,483,647 ");
+        printf("Input another Integer. Value MUST be less than -2,147,483,647 or greater than 2,147,483,647: ");
         fgets(input, 10, stdin);
         remove_new_line(input);
 
@@ -153,18 +181,24 @@ void gather_ints_from_user()
 
         while(validInput == REG_NOMATCH)
         {
-            printf("Invalid input. Try again ");
+            printf("Invalid input. Try again: ");
             fgets(input, 10, stdin);
             remove_new_line(input);
 
             validInput = regexec(&regex,input,0,NULL,0);
         }
 
-        numTwo = (int)strtol(input, NULL, 10);
 
-    }while(is_safe_add(numOne, numTwo) == INT_OVERFLOW);
+        numTwo = (int)strtol(input, NULL, 32);
 
+        buffer_clear();
+
+    }while(is_safe_add(numOne, numTwo) == INT_OVERFLOW || is_safe_multiply(numOne, numTwo) == INT_OVERFLOW);
+
+    _numOne = numOne;
+    _numTwo = numTwo;
 }
+
 
 void freeMemory()
 {
@@ -176,9 +210,10 @@ void freeMemory()
     _firstName = NULL;
 }
 
+
 int main()
 {
-    //readName();
+    readName();
     gather_ints_from_user();
     freeMemory();
     return 0;
