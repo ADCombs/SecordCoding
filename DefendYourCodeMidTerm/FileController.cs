@@ -22,7 +22,7 @@ namespace DefendYourCodeMidTerm
     /// <para/>Assumes valid inputs when being used, so make sure to check your input before calling any FileController methods!!
     /// <para/>DOES NOT DO ANY ERROR CHECKING OR CATCHING!
     /// </summary>
-    public class FileController
+    public static class FileController
     {
         
         /// ==========================================================================================================================
