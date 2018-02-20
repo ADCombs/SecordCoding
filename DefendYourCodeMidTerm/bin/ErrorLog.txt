@@ -1,2 +1,6 @@
 Warning: Bad input data during name collection 2/20/2018 1:55:16 PM
 Warning: Bad input data during name collection 2/20/2018 1:55:22 PM
+Warning: An Error occured during the FileInAndOut method at 2/20/2018 2:11:58 PM
+Access to the path 'C:\Users\truth\source\repos\DefendYourCodeMidTerm\DefendYourCodeMidTerm\bin\Debug\testinput.txt' is denied.
+Warning: User attempted to input an input file that did not exist! 2/20/2018 2:16:18 PM
+Warning: User attempted to input an input file that did not exist! 2/20/2018 3:49:26 PM

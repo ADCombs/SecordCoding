@@ -7,6 +7,8 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Collections.Generic;
 using System.Numerics;
+using System.Security.AccessControl;
+using System.Security.Principal;
 
 namespace DefendYourCodeMidTerm
 {
@@ -59,24 +61,31 @@ namespace DefendYourCodeMidTerm
         /// </summary>
         /// <param name="absoluteFilePath"></param>
         /// <returns> returns true if permissions were set to allow access else false</returns>
-        private static bool GiveFilePermissions(string absoluteFilePath)
+        private static bool CheckFilePermissions(string absoluteFilePath)
         {
-            var filePermission = new FileIOPermission(FileIOPermissionAccess.AllAccess, absoluteFilePath);
-            var isFilePermissionsSet = true;
-            
+            var writeAllowAndReadAllow = false;
+            var writeDenyAndReadDeny = false;
+            var accessControlList = Directory.GetAccessControl(absoluteFilePath);
+            if (accessControlList == null)
+                return false;
+            var accessRules = accessControlList.GetAccessRules(true, true,
+                typeof(System.Security.Principal.SecurityIdentifier));
+            if (accessRules == null)
+                return false;
 
-            try
+            foreach (FileSystemAccessRule rule in accessRules)
             {
-                filePermission.Demand();
-            }
-            catch (SecurityException e)
-            {
-                ErrorLogFile($"Error: {e.ToString()} {DateTime.Now}");
-                Console.WriteLine("Error in giving permissions");
-                isFilePermissionsSet = false;
+                if ((FileSystemRights.Write & rule.FileSystemRights) != FileSystemRights.Write || (FileSystemRights.Read & rule.FileSystemRights) != FileSystemRights.Read)
+                    continue;
+
+                if (rule.AccessControlType == AccessControlType.Allow)
+                    writeAllowAndReadAllow = true;
+                else if (rule.AccessControlType == AccessControlType.Deny)
+                    writeDenyAndReadDeny = true;
             }
 
-            return isFilePermissionsSet;
+            return writeAllowAndReadAllow && !writeDenyAndReadDeny;
+
         }
 
         /// <summary>
@@ -208,7 +217,7 @@ namespace DefendYourCodeMidTerm
                     ErrorLogFile($"Warning: Invalid name type detected {DateTime.Now}");
                 }*/
 
-            } while (!GiveFilePermissions(Path.GetFullPath(fileInputName)));
+            } while (!CheckFilePermissions(Path.GetFullPath(fileInputName)));
 
             _fileInputName = fileInputName;
         }
@@ -233,7 +242,7 @@ namespace DefendYourCodeMidTerm
                     ErrorLogFile($"Warning: Invalid name type detected {DateTime.Now}");
                 }*/
 
-            } while (!GiveFilePermissions(Path.GetFullPath(fileOutputName)));
+            } while (!CheckFilePermissions(Path.GetFullPath(fileOutputName)) || fileOutputName == _fileInputName);
 
             _fileOutputName = fileOutputName;
         }
@@ -355,8 +364,8 @@ namespace DefendYourCodeMidTerm
 
         static void Main(string[] args)
         {
-            UserInputName();
-            UserInputIntegers();
+           // UserInputName();
+           // UserInputIntegers();
             UserInputFile();
             UserOutputFile();
             UserInputPassword();
