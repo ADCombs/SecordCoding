@@ -13,6 +13,8 @@ int _numOne;
 int _numTwo;
 const int INT_OVERFLOW = 1;
 char * _inputFileName;
+const int FILE_IS_READABLE = 1;
+char * _outputFileName;
 
 void freeMemory();
 int is_numbers_valid_range(char *);
@@ -20,7 +22,7 @@ void buffer_clear();
 int is_safe_add(int,int);
 int is_safe_multiply(int,int);
 void error_log(char*);
-
+int is_file_valid(char*);
 
 void error_log(char * error)
 {
@@ -202,6 +204,24 @@ void gather_ints_from_user()
      regfree(&regex);
 }
 
+
+int is_file_valid(char* inputFileName)
+{
+    FILE * isFile;
+    char * mode = "r";
+
+    isFile = fopen(inputFileName, mode);
+
+    if(isFile == NULL)
+    {
+        printf("Input File does not exist or is not readable\n");
+        return 0;
+    }
+
+    fclose(isFile);
+    return 1;
+}
+
 void gather_user_input_file()
 {
     int validInput;
@@ -211,20 +231,30 @@ void gather_user_input_file()
     validInput = regcomp(&regex, "^[A-Z|a-z|0-9](\\-|\\_)*[A-Z|a-z|0-9]{1,260}\\.txt$", REG_EXTENDED); 
     if(validInput ){printf("no work "); exit(1);}
 
-    printf("Enter a valid input file. File must be a .txt extension and must be within the same folder as program. File must be readable: ");
-    fgets(input, maxFileName, stdin);
-    remove_new_line(input);
+    do{
 
-    validInput = regexec(&regex,input,0,NULL,0);
-
-    while(validInput == REG_NOMATCH || input[0]=='\0')
-    {
-        printf("Invalid input. Try again: ");
+        printf("Enter a valid input file. File must be a .txt extension and must be within the same folder as program. File must be readable: ");
         fgets(input, maxFileName, stdin);
         remove_new_line(input);
 
         validInput = regexec(&regex,input,0,NULL,0);
-    }
+
+        while(validInput == REG_NOMATCH || input[0]=='\0')
+        {
+            printf("Invalid input. Try again: ");
+            fgets(input, maxFileName, stdin);
+            remove_new_line(input);
+
+            validInput = regexec(&regex,input,0,NULL,0);
+        }
+
+    }while(is_file_valid(input) != FILE_IS_READABLE);
+
+    size_t length = strnlen(input, sizeof input);
+
+    _inputFileName =(char*)calloc(length, sizeof(char));
+
+    regfree(&regex);
 }
 
 void gather_user_output_file()
