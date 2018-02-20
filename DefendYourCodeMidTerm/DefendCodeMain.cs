@@ -96,10 +96,11 @@ namespace DefendYourCodeMidTerm
             // Pattern to match a name that is at least 1 character long to 50 characters max
             // and can contain as many hyphens as wanted. Will not accept numbers or 
             // special characters
-            string namePattern = @"^([a-z]|[A-Z]|\-){1,50}$";
-            string inputFirstName;
-            string inputLastName;
-            _regexNameMatcher = new Regex(namePattern);
+            string namePattern = @"(?=^.{1,50}$)^[A-Za-z]+(?:[\- '][A-Za-z]+)*$";
+            string inputFirstName = GetUserInput("Please input a first name no longer than 50 characters, name may contain letters, and a space, hyphen, or apostraphe between letters. No other characters, or numbers.", namePattern);
+            string inputLastName = GetUserInput("Please input a last name no longer than 50 characters, name may contain letters, and a space, hyphen, or apostraphe between letters. No other characters, or numbers.", namePattern);
+
+            /*_regexNameMatcher = new Regex(namePattern);
 
             Console.WriteLine("Please input a first name: " +
                               "first name can be no longer than 50 characters, " +
@@ -124,7 +125,7 @@ namespace DefendYourCodeMidTerm
                 Console.WriteLine("Invalid name entry. Please input a valid entry");
                 ErrorLogFile($"Warning: Bad input data during name collection {DateTime.Now}");
                 inputLastName = Console.ReadLine();
-            }
+            }*/
 
             _name = inputFirstName + " " + inputLastName;
         }
@@ -141,7 +142,7 @@ namespace DefendYourCodeMidTerm
 
             do
             {
-                Console.WriteLine(
+                /*Console.WriteLine(
                     "Input integer values that are less than 2,147,483,647. Integers must be input one at a time");
                 input = Console.ReadLine();
 
@@ -150,18 +151,20 @@ namespace DefendYourCodeMidTerm
                     Console.WriteLine("Invalid input");
                     ErrorLogFile($"Warning: Invalid input detected {DateTime.Now}");
                     input = Console.ReadLine();
-                }
+                }*/
+                input = GetUserInput("Input an integer that is between " + int.MinValue + " and " + int.MaxValue, @"^[+\-]?\d{1,10}$");
 
                 numOne = int.Parse(input);
 
-                input = Console.ReadLine();
+                /*input = Console.ReadLine();
 
                 while (!int.TryParse(input, out numTwo) || input == null)
                 {
                     Console.WriteLine("Invalid input");
                     ErrorLogFile($"Warning: Invalid input detected {DateTime.Now}");
                     input = Console.ReadLine();
-                }
+                }*/
+                input = GetUserInput("Input an integer that is between " + int.MinValue + " and " + int.MaxValue, @"^[+\-]?\d{1,10}$");
 
                 numTwo = int.Parse(input);
             } while (IsIntegerOverflow(numOne, numTwo));
@@ -176,14 +179,22 @@ namespace DefendYourCodeMidTerm
         /// </summary>
         public static void UserInputFile()
         {
-            string inputFileName = "";
+            string fileInputName = "";
 
-            Console.WriteLine("Enter a valid input file. File must be a .txt extension and must be within debug/bin" +
-                              "File must also be readable.");
+            //Console.WriteLine("Enter a valid input file. File must be a .txt extension and must be within debug/bin. File must also be readable.");
 
             do
             {
-                inputFileName = Console.ReadLine();
+                fileInputName = GetUserInput("Enter a valid input file. File must be a .txt extension and must be within debug/bin. File must also be readable.", _fileNamePattern);
+
+                while(!FileController.FileExists(fileInputName))
+                {
+                    Console.WriteLine("Input file does not exist!");
+                    ErrorLogFile($"Warning: User attempted to input an input file that did not exist! {DateTime.Now}");
+                    fileInputName = GetUserInput("Enter a valid input file. File must be a .txt extension and must be within debug/bin. File must also be readable.", _fileNamePattern);
+                }
+
+                /*inputFileName = Console.ReadLine();
                 _regexNameMatcher = new Regex(_fileNamePattern);
 
                 while ((inputFileName != null && !File.Exists(inputFileName)) || !_regexNameMatcher.IsMatch(inputFileName))
@@ -191,31 +202,32 @@ namespace DefendYourCodeMidTerm
                     Console.WriteLine("File does not exist or does not match valid input");
                     inputFileName = Console.ReadLine();
                     ErrorLogFile($"Warning: Invalid name type detected {DateTime.Now}");
-                }
+                }*/
 
-            } while (!GiveFilePermissions(Path.GetFullPath(inputFileName)));
+            } while (!GiveFilePermissions(Path.GetFullPath(fileInputName)));
 
-            _fileInputName = inputFileName;
+            _fileInputName = fileInputName;
         }
 
         public static void UserOutputFile()
         {
             string fileOutputName = "";
 
-            Console.WriteLine("Enter a valid existing output file. File Must exist within debug/bin and must be a .txt extension." +
-                              "File must be able to be readable and writable.");
+            //Console.WriteLine("Enter a valid output file. File must be a .txt extension and must be within debug/bin.  File must be able to be readable and writable.");
 
             do
             {
-                fileOutputName = Console.ReadLine();
+                fileOutputName = GetUserInput("Enter a valid output file. File must be a .txt extension and must be within debug/bin. File must also be readable.", _fileNamePattern);
+
+                /*fileOutputName = Console.ReadLine();
                 _regexNameMatcher = new Regex(_fileNamePattern);
 
-                while (fileOutputName == null || fileOutputName == "" /*&& !File.Exists(outputFileName))*/ || !_regexNameMatcher.IsMatch(fileOutputName))
+                while (fileOutputName == null || fileOutputName == "" && !File.Exists(outputFileName)) || !_regexNameMatcher.IsMatch(fileOutputName))
                 {
                     Console.WriteLine("File does not exist or does not match valid input");
                     fileOutputName = Console.ReadLine();
                     ErrorLogFile($"Warning: Invalid name type detected {DateTime.Now}");
-                }
+                }*/
 
             } while (!GiveFilePermissions(Path.GetFullPath(fileOutputName)));
 
@@ -224,7 +236,8 @@ namespace DefendYourCodeMidTerm
 
         private static void UserInputPassword()
         {
-
+            Console.WriteLine("Enter a password between 8 and 24 characters, with no spaces, only alphanumeric characters, and the following special characters: ! @ % ^ & *" +
+                              "\r\nThe password must contain at least one uppercase letter, one lowercase letter, one number, and one special character.");
         }
 
         public static void OutputToFile()
@@ -233,11 +246,31 @@ namespace DefendYourCodeMidTerm
             FileController.WriteToFile(_fileOutputName, "\r\nTesting Successful!");
         }
 
+        private static string GetUserInput(string prompt, string regex)
+        {
+            Regex regexMatcher = new Regex(regex);
+            string ret = "";
+
+            Console.WriteLine(prompt);
+            ret = Console.ReadLine();
+
+            while (ret == null || ret == "" || !regexMatcher.IsMatch(ret))
+            {
+                Console.WriteLine("Invalid entry. Please input a valid entry");
+                ErrorLogFile($"Warning: Bad input data during name collection {DateTime.Now}");
+
+                Console.WriteLine(prompt);
+                ret = Console.ReadLine();
+            }
+
+            return ret;
+        }
+
         static void Main(string[] args)
         {
             UserInputName();
-            //UserInputIntegers();
-            //UserInputFile();
+            UserInputIntegers();
+            UserInputFile();
             UserOutputFile();
             UserInputPassword();
             OutputToFile();
