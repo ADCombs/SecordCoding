@@ -19,7 +19,8 @@ namespace DefendYourCodeMidTerm
         // Makes sure that the file that is entered only lives within the debug/bin folder of program location
         // Example of accepted patterns: test.txt, te-st.txt, -test .txt, te st.txt, te- st.txt
         // Example of not acceptable input: /test.txt, c\\:test.txt, t3st.txt
-        private static string _fileNamePattern = @"^([A-Z]|[a-z]|\.| |\-)*\.txt$"; // A better regex (imo) would be: ^[\w\. \-]+\.txt$
+        // Andrew's Regex: ^([A-Z]|[a-z]|\.| |\-)*\.txt$
+        private static string _fileNamePattern = @"^\w+(?:[\. -]\w+)*\.txt$"; // This new regex allows for alphanumeric, spaces, hypens, and periods. However spaces, hypens, and periods must come between at least two alphanumberics, for example a.a.txt is valid, but a..txt is not and ..txt is not either.
 
 
         /// <summary>
@@ -199,29 +200,37 @@ namespace DefendYourCodeMidTerm
 
         public static void UserOutputFile()
         {
-            string outputFileName = "";
+            string fileOutputName = "";
 
             Console.WriteLine("Enter a valid existing output file. File Must exist within debug/bin and must be a .txt extension." +
                               "File must be able to be readable and writable.");
 
             do
             {
-                outputFileName = Console.ReadLine();
+                fileOutputName = Console.ReadLine();
                 _regexNameMatcher = new Regex(_fileNamePattern);
 
-                while (outputFileName == null || outputFileName == "" /*&& !File.Exists(outputFileName))*/ || !_regexNameMatcher.IsMatch(outputFileName))
+                while (fileOutputName == null || fileOutputName == "" /*&& !File.Exists(outputFileName))*/ || !_regexNameMatcher.IsMatch(fileOutputName))
                 {
                     Console.WriteLine("File does not exist or does not match valid input");
-                    outputFileName = Console.ReadLine();
+                    fileOutputName = Console.ReadLine();
                     ErrorLogFile($"Warning: Invalid name type detected {DateTime.Now}");
                 }
 
-            } while (!GiveFilePermissions(Path.GetFullPath(outputFileName)));
+            } while (!GiveFilePermissions(Path.GetFullPath(fileOutputName)));
 
-            _fileOutputName = outputFileName;
+            _fileOutputName = fileOutputName;
+        }
 
-            FileController.WriteToFile(outputFileName, "Testing File Controller WriteToFile method...", append: false);
-            FileController.WriteToFile(outputFileName, "\r\nTesting Successful!");
+        private static void UserInputPassword()
+        {
+
+        }
+
+        public static void OutputToFile()
+        {
+            FileController.WriteToFile(_fileOutputName, "Testing File Controller WriteToFile method...", append: false);
+            FileController.WriteToFile(_fileOutputName, "\r\nTesting Successful!");
         }
 
         static void Main(string[] args)
@@ -230,6 +239,8 @@ namespace DefendYourCodeMidTerm
             //UserInputIntegers();
             //UserInputFile();
             UserOutputFile();
+            UserInputPassword();
+            OutputToFile();
         }
     }
 }

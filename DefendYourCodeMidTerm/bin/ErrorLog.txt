@@ -10,3 +10,11 @@ Warning: Invalid name type detected 2/19/2018 2:55:42 PM
 Warning: Invalid name type detected 2/19/2018 2:55:51 PM
 Warning: Invalid name type detected 2/19/2018 2:56:36 PM
 Warning: Bad input data during name collection 2/19/2018 3:33:23 PM
+Warning: Invalid name type detected 2/19/2018 4:44:51 PM
+Warning: Invalid name type detected 2/19/2018 4:46:07 PM
+Warning: Invalid name type detected 2/19/2018 4:46:15 PM
+Warning: Invalid name type detected 2/19/2018 4:46:18 PM
+Warning: Invalid name type detected 2/19/2018 4:46:26 PM
+Warning: Invalid name type detected 2/19/2018 4:48:26 PM
+Warning: Invalid name type detected 2/19/2018 5:00:10 PM
+Warning: Invalid name type detected 2/19/2018 5:00:16 PM
