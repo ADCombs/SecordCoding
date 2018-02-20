@@ -105,7 +105,7 @@ void readName()
     if(correctInputMatch ){printf("no work "); exit(1);}
     correctInputMatch = regexec(&regex,input,0,NULL,0);
 
-    while(correctInputMatch == REG_NOMATCH && !is_numbers_valid_range(input))
+    while(correctInputMatch == REG_NOMATCH || input[0]=='\0')
     {
         printf("Invalid input try again ");
         fgets(input,50,stdin);
@@ -124,7 +124,7 @@ void readName()
     remove_new_line(input);
     correctInputMatch = regexec(&regex,input,0,NULL,0);
 
-    while(correctInputMatch == REG_NOMATCH && !is_numbers_valid_range(input))
+    while(correctInputMatch == REG_NOMATCH || input[0]=='\0')
     {
         printf("Invalid input try again ");
         fgets(input,50,stdin);
@@ -208,24 +208,28 @@ void gather_user_input_file()
     char input[265];
     int maxFileName = 265; // As part of windows standards, files must be at minimum 260 length; plus the extension of .txt; plus the null terminator
 
-    validInput = regcomp(&regex, "^(\\w){1,264}$", REG_EXTENDED); 
+    validInput = regcomp(&regex, "^[A-Z|a-z|0-9](\\-|\\_)*[A-Z|a-z|0-9]{1,260}\\.txt$", REG_EXTENDED); 
     if(validInput ){printf("no work "); exit(1);}
 
     printf("Enter a valid input file. File must be a .txt extension and must be within the same folder as program. File must be readable: ");
     fgets(input, maxFileName, stdin);
     remove_new_line(input);
 
-    while(validInput == REG_NOMATCH)
+    validInput = regexec(&regex,input,0,NULL,0);
+
+    while(validInput == REG_NOMATCH || input[0]=='\0')
     {
         printf("Invalid input. Try again: ");
         fgets(input, maxFileName, stdin);
         remove_new_line(input);
+
+        validInput = regexec(&regex,input,0,NULL,0);
     }
 }
 
 void gather_user_output_file()
 {
-        int validInput;
+    int validInput;
     char input[265];
     int maxFileName = 265; // As part of windows standards, files must be at minimum 260 length; plus the extension of .txt; plus the null terminator
 
@@ -236,7 +240,7 @@ void gather_user_output_file()
     fgets(input, maxFileName, stdin);
     remove_new_line(input);
 
-    while(validInput == REG_NOMATCH)
+    while(validInput == REG_NOMATCH || input[0]=='\0')
     {
         printf("Invalid input. Try again: ");
         fgets(input, maxFileName, stdin);
