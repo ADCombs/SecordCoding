@@ -15,7 +15,6 @@ namespace DefendYourCodeMidTerm
     partial class DefendCodeMain
     {
         private static string _name;
-        private static Regex _regexNameMatcher;
         private static BigInteger _numOne;
         private static BigInteger _numTwo;
         private static string _fileInputName;
@@ -25,7 +24,6 @@ namespace DefendYourCodeMidTerm
         // Makes sure that the file that is entered only lives within the debug/bin folder of program location
         // Example of accepted patterns: test.txt, te-st.txt, -test .txt, te st.txt, te- st.txt
         // Example of not acceptable input: /test.txt, c\\:test.txt, t3st.txt
-        // Andrew's Regex: ^([A-Z]|[a-z]|\.| |\-)*\.txt$
         private static string _fileNamePattern = @"^\w+(?:[\. -]\w+)*\.txt$"; // This new regex allows for alphanumeric, spaces, hypens, and periods. However spaces, hypens, and periods must come between at least two alphanumberics, for example a.a.txt is valid, but a..txt is not and ..txt is not either.
         private static string _passwordPatternRegex = @"(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[!@%\^&\*])(?=^[\w!@%\^&\*]{8,24}$)";
 
@@ -66,6 +64,7 @@ namespace DefendYourCodeMidTerm
             var writeAllowAndReadAllow = false;
             var writeDenyAndReadDeny = false;
             var accessControlList = Directory.GetAccessControl(absoluteFilePath);
+
             if (accessControlList == null)
                 return false;
             var accessRules = accessControlList.GetAccessRules(true, true,
@@ -103,33 +102,6 @@ namespace DefendYourCodeMidTerm
             string inputFirstName = GetUserInput("Please input a first name no longer than 50 characters, name may contain letters, and a space, hyphen, or apostraphe between letters. No other characters, or numbers.", namePattern);
             string inputLastName = GetUserInput("Please input a last name no longer than 50 characters, name may contain letters, and a space, hyphen, or apostraphe between letters. No other characters, or numbers.", namePattern);
 
-            /*_regexNameMatcher = new Regex(namePattern);
-
-            Console.WriteLine("Please input a first name: " +
-                              "first name can be no longer than 50 characters, " +
-                              "name may contain hyphens, no other special characters, or numbers");
-
-            inputFirstName = Console.ReadLine();
-
-            while (inputFirstName != null && !_regexNameMatcher.IsMatch(inputFirstName))
-            {
-                Console.WriteLine("Invalid name entry. Please input a valid entry");
-                ErrorLogFile($"Warning: Bad input data during name collection {DateTime.Now}");
-            }
-
-            Console.WriteLine("Please input a last name: " +
-                              "last name can be no longer than 50 characters, " +
-                              "name may contain hyphens, no other special characters, or numbers");
-
-            inputLastName = Console.ReadLine();
-
-            while (inputLastName != null && !_regexNameMatcher.IsMatch((inputLastName)))
-            {
-                Console.WriteLine("Invalid name entry. Please input a valid entry");
-                ErrorLogFile($"Warning: Bad input data during name collection {DateTime.Now}");
-                inputLastName = Console.ReadLine();
-            }*/
-
             _name = inputFirstName + " " + inputLastName;
         }
 
@@ -144,16 +116,6 @@ namespace DefendYourCodeMidTerm
             int results = 0;
             string input = string.Empty;
 
-                /*Console.WriteLine(
-                    "Input integer values that are less than 2,147,483,647. Integers must be input one at a time");
-                input = Console.ReadLine();
-
-                while (!int.TryParse(input, out numOne) || input == null)
-                {
-                    Console.WriteLine("Invalid input");
-                    ErrorLogFile($"Warning: Invalid input detected {DateTime.Now}");
-                    input = Console.ReadLine();
-                }*/
                 input = GetUserInput("Input an integer that is between " + int.MinValue + " and " + int.MaxValue, @"^[+\-]?\d{1,10}$");
 
                 while (!int.TryParse(input, out results))
@@ -164,15 +126,6 @@ namespace DefendYourCodeMidTerm
 
                 numOne = int.Parse(input);
 
-                
-                /*input = Console.ReadLine();
-
-                while (!int.TryParse(input, out numTwo) || input == null)
-                {
-                    Console.WriteLine("Invalid input");
-                    ErrorLogFile($"Warning: Invalid input detected {DateTime.Now}");
-                    input = Console.ReadLine();
-                }*/
                 input = GetUserInput("Input an integer that is between " + int.MinValue + " and " + int.MaxValue, @"^[+\-]?\d{1,10}$");
 
                 while (!int.TryParse(input, out results))
@@ -194,8 +147,6 @@ namespace DefendYourCodeMidTerm
         {
             string fileInputName = string.Empty;
 
-            //Console.WriteLine("Enter a valid input file. File must be a .txt extension and must be within debug/bin. File must also be readable.");
-
             do
             {
                 fileInputName = GetUserInput("Enter a valid input file. File must be a .txt extension and must be within debug/bin. File must also be readable.", _fileNamePattern);
@@ -207,16 +158,6 @@ namespace DefendYourCodeMidTerm
                     fileInputName = GetUserInput("Enter a valid input file. File must be a .txt extension and must be within debug/bin. File must also be readable.", _fileNamePattern);
                 }
 
-                /*inputFileName = Console.ReadLine();
-                _regexNameMatcher = new Regex(_fileNamePattern);
-
-                while ((inputFileName != null && !File.Exists(inputFileName)) || !_regexNameMatcher.IsMatch(inputFileName))
-                {
-                    Console.WriteLine("File does not exist or does not match valid input");
-                    inputFileName = Console.ReadLine();
-                    ErrorLogFile($"Warning: Invalid name type detected {DateTime.Now}");
-                }*/
-
             } while (!CheckFilePermissions(Path.GetFullPath(fileInputName)));
 
             _fileInputName = fileInputName;
@@ -226,21 +167,9 @@ namespace DefendYourCodeMidTerm
         {
             string fileOutputName = string.Empty;
 
-            //Console.WriteLine("Enter a valid output file. File must be a .txt extension and must be within debug/bin.  File must be able to be readable and writable.");
-
             do
             {
                 fileOutputName = GetUserInput("Enter a valid output file. File must be a .txt extension and must be within debug/bin. File must also be readable.", _fileNamePattern);
-
-                /*fileOutputName = Console.ReadLine();
-                _regexNameMatcher = new Regex(_fileNamePattern);
-
-                while (fileOutputName == null || fileOutputName == "" && !File.Exists(outputFileName)) || !_regexNameMatcher.IsMatch(fileOutputName))
-                {
-                    Console.WriteLine("File does not exist or does not match valid input");
-                    fileOutputName = Console.ReadLine();
-                    ErrorLogFile($"Warning: Invalid name type detected {DateTime.Now}");
-                }*/
 
             } while (!CheckFilePermissions(Path.GetFullPath(fileOutputName)) || fileOutputName == _fileInputName);
 
@@ -364,8 +293,8 @@ namespace DefendYourCodeMidTerm
 
         static void Main(string[] args)
         {
-           // UserInputName();
-           // UserInputIntegers();
+            UserInputName();
+            UserInputIntegers();
             UserInputFile();
             UserOutputFile();
             UserInputPassword();
