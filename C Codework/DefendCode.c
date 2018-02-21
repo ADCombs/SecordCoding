@@ -9,9 +9,8 @@
 char * _firstName;
 regex_t regex;
 char * _lastName;
-int _numOne;
-int _numTwo;
-const int INT_OVERFLOW = 1;
+long long _valueAfterAdd;
+long long _valueAfterMultiply;
 char * _inputFileName;
 const int FILE_IS_READABLE = 1;
 char * _outputFileName;
@@ -19,8 +18,8 @@ char * _outputFileName;
 void freeMemory();
 int is_numbers_valid_range(char *);
 void buffer_clear();
-int is_safe_add(int,int);
-int is_safe_multiply(int,int);
+void add_values(int,int);
+void multiply_values(int,int);
 void error_log(char*);
 int is_file_valid(char*);
 
@@ -53,23 +52,19 @@ void remove_new_line(char * input)
 }
 
 
-int is_safe_add(int a, int b)
+void add_values(int a, int b)
 {
-    if(a > 0 && b > INT_MAX - a)
-        return 1;
-    else if(a < 0 && b < INT_MIN - a)
-        return 1;
-    else 
-        return 0;
+    long long aLong = (long long)a;
+    long long bLong = (long long)b;
+    _valueAfterAdd = aLong + bLong;
 }
 
 
-int is_safe_multiply(int a, int b)
+void multiply_values(int a, int b)
 {
-    if(b != 0 && a > INT_MAX/b)
-        return 1;
-    else
-        return 0;
+    long long aLong = (long long)a;
+    long long bLong = (long long)b;
+    _valueAfterMultiply = aLong * bLong;
 }
 
 
@@ -150,58 +145,53 @@ void gather_ints_from_user()
     char input[10];
     int validInput;
 
-    validInput = regcomp(&regex, "^[0-9]+$", REG_EXTENDED);
+    validInput = regcomp(&regex, "^[+\\-]?[0-9]{1,10}$", REG_EXTENDED);
     if(validInput ){printf("no work "); exit(1);}
 
-    do
+    printf("Input an integer. Value MUST be less than %d or greater than %d: ", INT_MIN, INT_MAX);
+    fgets(input, 11, stdin);
+    remove_new_line(input);
+        
+
+    validInput = regexec(&regex,input,0,NULL,0);
+
+    while(validInput == REG_NOMATCH || !is_numbers_valid_range(input))
     {
-        printf("Input an integer. Value MUST be less than %d or greater than %d: ", INT_MIN, INT_MAX);
-        fgets(input, 11, stdin);
-        remove_new_line(input);
-        
-
-        validInput = regexec(&regex,input,0,NULL,0);
-        
-        while(validInput == REG_NOMATCH && !is_numbers_valid_range(input))
-        {
-            printf("Invalid input. Try again: ");
-            fgets(input, 10, stdin);
-            remove_new_line(input);
-
-            validInput = regexec(&regex,input,0,NULL,0);
-            
-        }
-
-         numOne = (int)strtol(input, NULL, 10);
-        
         buffer_clear();
-
-        printf("Input another Integer. Value MUST be less than %d or greater than %d: ", INT_MIN, INT_MAX);
+        printf("Invalid input. Try again: ");
         fgets(input, 10, stdin);
         remove_new_line(input);
 
         validInput = regexec(&regex,input,0,NULL,0);
+            
+    }
 
-        while(validInput == REG_NOMATCH)
-        {
-            printf("Invalid input. Try again: ");
-            fgets(input, 10, stdin);
-            remove_new_line(input);
+    numOne = (int)strtol(input, NULL, 10);
 
-            validInput = regexec(&regex,input,0,NULL,0);
-        }
+    buffer_clear();
+
+    printf("Input another Integer. Value MUST be less than %d or greater than %d: ", INT_MIN, INT_MAX);
+    fgets(input, 11, stdin);
+    remove_new_line(input);
+
+    validInput = regexec(&regex,input,0,NULL,0);
+
+    while(validInput == REG_NOMATCH || !is_numbers_valid_range(input))
+    {
+        printf("Invalid input. Try again: ");
+        fgets(input, 11, stdin);
+        remove_new_line(input);
+
+        validInput = regexec(&regex,input,0,NULL,0);
+    }
 
 
-        numTwo = (int)strtol(input, NULL, 32);
+    numTwo = (int)strtol(input, NULL, 10);
 
-        buffer_clear();
-
-    }while(is_safe_add(numOne, numTwo) == INT_OVERFLOW || is_safe_multiply(numOne, numTwo) == INT_OVERFLOW);
-
-    _numOne = numOne;
-    _numTwo = numTwo;
-
-     regfree(&regex);
+    buffer_clear();
+    multiply_values(numOne, numTwo);
+    add_values(numOne, numTwo);
+    regfree(&regex);
 }
 
 
@@ -294,8 +284,8 @@ void freeMemory()
 
 int main()
 {
-    //readName();
-    //gather_ints_from_user();
+    readName();
+    gather_ints_from_user();
     gather_user_input_file();
     freeMemory();
     return 0;
