@@ -6,6 +6,8 @@
 #include <limits.h>
 #include <errno.h>
 
+static const int CHUNK = 1024;
+
 char * _firstName;
 regex_t regex;
 char * _lastName;
@@ -22,6 +24,7 @@ void add_values(int,int);
 void multiply_values(int,int);
 void error_log(char*);
 int is_file_valid(char*);
+int output_to_file();
 
 void error_log(char * error)
 {
@@ -114,6 +117,7 @@ void readName()
     size_t length = strnlen(input, sizeof input);
 
     _firstName = (char*)calloc(length, sizeof(char));
+    strncpy(_firstName, input, length);
 
     printf("Please input your last name. Last name must be at most 50 characters long cannot contain numbers or special characters: ");
     fgets(input, 50, stdin);
@@ -133,6 +137,7 @@ void readName()
     length = strnlen(input, sizeof input);
 
     _lastName = (char*)calloc(length, sizeof(char)); 
+    strncpy(_lastName, input, length);
 
     regfree(&regex);
 }
@@ -240,9 +245,10 @@ void gather_user_input_file()
 
     }while(is_file_valid(input) != FILE_IS_READABLE);
 
-    size_t length = strnlen(input, sizeof input);
+    size_t length = strnlen(input, sizeof(input));
 
     _inputFileName =(char*)calloc(length, sizeof(char));
+    strncpy(_inputFileName, input, length);
 
     regfree(&regex);
 }
@@ -266,7 +272,77 @@ void gather_user_output_file()
         fgets(input, maxFileName, stdin);
         remove_new_line(input);
     }
+    
+    size_t length = strnlen(input, sizeof(input));
+
+    _outputFileName =(char*)calloc(length, sizeof(char));
+    strncpy(_outputFileName, input, length);
+    
+    regfree(&regex);
+    
 }
+
+int output_to_file() {
+    printf("Check 0 in output to file\n");
+    FILE * inFile = fopen(_inputFileName, "r");
+    FILE * outFile = fopen(_outputFileName, "w");
+    //char * buf;
+    //size_t nread;
+
+    printf("Check 1 in output to file\n");
+
+    //if(outFile != NULL) 
+    //{
+        /*
+        if((off_t outSize = fileSize(_outputFileName)) != -1) 
+        {
+            char
+        }
+        */
+
+       /* fprintf(outFile, "%s %s Added: %lld Multiplied: %lld\n", _firstName, _lastName, _valueAfterAdd, _valueAfterMultiply);
+
+        buf = (char *)calloc(CHUNK, sizeof(char));
+
+        if(buf == NULL) {
+            return -1;
+        }
+
+        while((nread = fread(buf, 1, CHUNK, inFile)) > 0)
+        {
+            if(ferror(inFile))
+            {
+                return -1;
+            }
+
+            fwrite(buf, sizeof(char), sizeof(buf), outFile);
+        }
+    }
+
+    */
+    fclose(inFile);
+    inFile = NULL;
+
+    fclose(outFile);
+    outFile = NULL;
+
+    //free(buf);
+    //buf = NULL;
+    
+
+    return 0;
+}
+
+/*
+off_t fileSize(const char * filename) {
+    struct stat st;
+
+    if (stat(filename, &st) == 0)
+        return st.st_size;
+
+    return -1;
+}
+*/
 
 
 void freeMemory()
@@ -287,6 +363,8 @@ int main()
     readName();
     gather_ints_from_user();
     gather_user_input_file();
+    gather_user_output_file();
+    output_to_file();
     freeMemory();
     return 0;
 }
