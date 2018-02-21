@@ -6,7 +6,7 @@
 #include <limits.h>
 #include <errno.h>
 
-static const int CHUNK = 1024;
+//static const int CHUNK = 1024;
 
 char * _firstName;
 regex_t regex;
@@ -20,6 +20,7 @@ char * _outputFileName;
 void freeMemory();
 int is_numbers_valid_range(char *);
 void buffer_clear();
+void prompt_user(char input[], char * prompt, char * regex, size_t max_size);
 void add_values(int,int);
 void multiply_values(int,int);
 void error_log(char*);
@@ -92,11 +93,51 @@ void buffer_clear()
 }
 
 
+void clean_stdin()
+{
+    int c;
+    do {
+        c = getchar();
+    } while (c != '\n' && c != EOF);
+}
+
+
+void prompt_user(char input[], char * prompt, char * regex, size_t max_size)
+{
+	if(input == NULL || prompt == NULL || regex == NULL)
+		return;
+
+	char userInput[max_size*2];
+	regex_t regext;
+	int correctInputMatch;
+	printf("%s", prompt);
+	fgets(userInput, max_size*2, stdin);
+	remove_new_line(userInput);
+
+	correctInputMatch = regcomp(&regext, regex, REG_EXTENDED);
+	if(correctInputMatch ){printf("no work"); exit(1);}
+	correctInputMatch = regexec(&regext,userInput,0,NULL,0);
+
+	if(correctInputMatch == REG_NOMATCH || userInput[0]=='\0')
+	{
+		clean_stdin();
+		printf("%s\r\n", "Invalid input...");
+		prompt_user(input, prompt, regex, max_size);
+	}
+	else if(correctInputMatch == REG_NOERROR)
+	{
+		strncpy(input, userInput, max_size);
+	}
+
+	regfree(&regext);
+}
+
+
 void readName()
 {
-    char input[50];
+    char input[50] = "\0";
     int correctInputMatch;
-    printf("Please input your first name. First name must be at most 50 characters long cannot contain numbers or special characters: ");
+    /*printf("Please input your first name. First name must be at most 50 characters long cannot contain numbers or special characters: ");
     fgets(input, 50, stdin);
 
     remove_new_line(input);
@@ -113,13 +154,17 @@ void readName()
         correctInputMatch = regexec(&regex,input,0,NULL,0);    
     }
 
-    buffer_clear();
-    size_t length = strnlen(input, sizeof input);
+    buffer_clear();*/
+	prompt_user(input, "Please input your first name. First name must be at most 50 characters long cannot contain numbers or special characters: ",
+								"^[a-z|A-Z|\\-]{1,50}$", 50);
+    size_t length = strnlen(input, 50);
 
     _firstName = (char*)calloc(length, sizeof(char));
     strncpy(_firstName, input, length);
 
-    printf("Please input your last name. Last name must be at most 50 characters long cannot contain numbers or special characters: ");
+    printf("%s\r\n", _firstName);
+
+    /*printf("Please input your last name. Last name must be at most 50 characters long cannot contain numbers or special characters: ");
     fgets(input, 50, stdin);
 
     remove_new_line(input);
@@ -133,11 +178,15 @@ void readName()
         correctInputMatch = regexec(&regex,input,0,NULL,0);    
     }
 
-    buffer_clear();
+    buffer_clear();*/
+    prompt_user(input, "Please input your last name. Last name must be at most 50 characters long cannot contain numbers or special characters: ",
+    								"^[a-z|A-Z|\\-]{1,50}$", 50);
     length = strnlen(input, sizeof input);
 
     _lastName = (char*)calloc(length, sizeof(char)); 
     strncpy(_lastName, input, length);
+
+    printf("%s\r\n", _lastName);
 
     regfree(&regex);
 }
@@ -361,10 +410,10 @@ void freeMemory()
 int main()
 {
     readName();
-    gather_ints_from_user();
-    gather_user_input_file();
-    gather_user_output_file();
-    output_to_file();
+    //gather_ints_from_user();
+    //gather_user_input_file();
+    //gather_user_output_file();
+    //output_to_file();
     freeMemory();
     return 0;
 }
