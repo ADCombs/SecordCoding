@@ -5,6 +5,7 @@
 #include <regex.h>
 #include <limits.h>
 #include <errno.h>
+#include <fcntl.h>
 
 //static const int CHUNK = 1024;
 
@@ -16,6 +17,10 @@ long long _valueAfterMultiply;
 char * _inputFileName;
 const int FILE_IS_READABLE = 1;
 char * _outputFileName;
+FILE * _inputFile;
+FILE * _outputFile;
+
+const char * _errorlog = "error.log";
 
 void freeMemory();
 int is_numbers_valid_range(char *);
@@ -26,6 +31,10 @@ void multiply_values(int,int);
 void error_log(char*);
 int is_file_valid(char*);
 int output_to_file();
+FILE * open_file();
+int close_File(FILE *);
+char *readline (FILE *fp, char **buffer);
+
 
 void error_log(char * error)
 {
@@ -136,7 +145,7 @@ void prompt_user(char input[], char * prompt, char * regex, size_t max_size)
 void readName()
 {
     char input[50] = "\0";
-    int correctInputMatch;
+    //int correctInputMatch;
     /*printf("Please input your first name. First name must be at most 50 characters long cannot contain numbers or special characters: ");
     fgets(input, 50, stdin);
 
@@ -333,51 +342,20 @@ void gather_user_output_file()
 
 int output_to_file() {
     printf("Check 0 in output to file\n");
-    FILE * inFile = fopen(_inputFileName, "r");
-    FILE * outFile = fopen(_outputFileName, "w");
-    //char * buf;
-    //size_t nread;
+
+    //_inputFile = open_file(_inputFileName, "r")
 
     printf("Check 1 in output to file\n");
 
-    //if(outFile != NULL) 
-    //{
-        /*
-        if((off_t outSize = fileSize(_outputFileName)) != -1) 
-        {
-            char
-        }
-        */
+    //_outputFile = open_file(_outputFileName, "w");
 
-       /* fprintf(outFile, "%s %s Added: %lld Multiplied: %lld\n", _firstName, _lastName, _valueAfterAdd, _valueAfterMultiply);
 
-        buf = (char *)calloc(CHUNK, sizeof(char));
+    //write_to_file(_inputFileName, "w", "")
 
-        if(buf == NULL) {
-            return -1;
-        }
 
-        while((nread = fread(buf, 1, CHUNK, inFile)) > 0)
-        {
-            if(ferror(inFile))
-            {
-                return -1;
-            }
 
-            fwrite(buf, sizeof(char), sizeof(buf), outFile);
-        }
-    }
 
-    */
-    fclose(inFile);
-    inFile = NULL;
 
-    fclose(outFile);
-    outFile = NULL;
-
-    //free(buf);
-    //buf = NULL;
-    
 
     return 0;
 }
@@ -393,6 +371,102 @@ off_t fileSize(const char * filename) {
 }
 */
 
+int close_file(FILE * file)
+{
+
+   if (NULL == file) {
+       return -1;
+     }
+     /* ... */
+     if (fclose(file) == EOF) {
+       return -1;
+     }
+     return 0;
+}
+
+FILE * open_file(const char * fileName, const char * mode)
+{
+  FILE * file = fopen(fileName, mode);
+  if (file == NULL) {
+    /* Handle error */
+    perror("NULL FILE in open_file");
+    return NULL;
+  }
+  
+  return file;
+}
+
+char * read_from_file(const char * fileName) 
+{
+    FILE * file = open_file(fileName, "r");
+
+    char * buf = readline(file, &buf);
+    
+    if(close_file(file) != 0) {
+        perror("error while trying to close file in read_from_file\n");
+        return "default";
+    }
+
+    return buf;
+}
+
+int write_to_file(const char * fileName, const char * mode, char * text, size_t maxSize)
+{
+    FILE * file = open_file(fileName, mode);
+
+    if(text == NULL) {
+        return -1;
+    }
+
+    if(fwrite(text, sizeof(char), maxSize, file) > 0)
+        return (close_file(file) == 0);
+
+    if(close_file(file) != 0)
+        return -2;
+
+    return -1;
+}
+
+/* read line from 'fp' allocate *buffer nchar in size
+ * realloc as necessary. Returns a pointer to *buffer
+ * on success, NULL otherwise.
+ */
+char *readline (FILE *fp, char **buffer) 
+{
+    int ch;
+    size_t buflen = 0, nchar = 64;
+
+    *buffer = calloc (nchar, sizeof(char));    /* allocate buffer nchar in length */
+    if (!*buffer) {
+        fprintf (stderr, "readline() error: virtual memory exhausted.\n");
+        return NULL;
+    }
+
+    while ((ch = fgetc(fp)) != '\n' && ch != EOF) 
+    {
+        (*buffer)[buflen++] = ch;
+
+        if (buflen + 1 >= nchar) {  /* realloc */
+            char *tmp = realloc (*buffer, nchar * 2);
+            if (!tmp) {
+                fprintf (stderr, "error: realloc failed, "
+                                "returning partial buffer.\n");
+                (*buffer)[buflen] = 0;
+                return *buffer;
+            }
+            *buffer = tmp;
+            nchar *= 2;
+        }
+    }
+    (*buffer)[buflen] = 0;           /* nul-terminate */
+
+    if (buflen == 0 && ch == EOF) {  /* return NULL if nothing read */
+        free (*buffer);
+        *buffer = NULL;
+    }
+
+    return *buffer;
+}
 
 void freeMemory()
 {
@@ -401,14 +475,33 @@ void freeMemory()
     free(_inputFileName);
     regfree(&regex);
 
+    fclose(_inputFile);
+    fclose(_outputFile);
+
     _inputFileName = NULL;
     _lastName = NULL;
     _firstName = NULL;
+
+    _inputFile = NULL;
+    _outputFile = NULL;
 }
 
 
 int main()
 {
+    /*
+    int fd;
+    if((fd=open(_errorlog,O_CREAT|O_APPEND|O_WRONLY,0644))!=-1)
+    {
+        dup2(fd,2);
+    }
+    else
+    {
+        perror(_errorlog);
+    }    
+    close_file(fd);
+    */
+
     readName();
     //gather_ints_from_user();
     //gather_user_input_file();
