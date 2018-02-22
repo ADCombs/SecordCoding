@@ -6,8 +6,10 @@
 #include <limits.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <crypt.h>
+#include <time.h>
+#include <unistd.h>
 
-//static const int CHUNK = 1024;
 
 char * _firstName;
 regex_t regex;
@@ -23,19 +25,22 @@ FILE * _outputFile;
 const char * _errorlog = "error.log";
 
 void freeMemory();
-//int is_numbers_valid_range(char *);
 int is_numbers_valid_range(long input);
 void buffer_clear();
 void prompt_user(char input[], char * prompt, char * regex, size_t max_size);
 void add_values(int,int);
 void multiply_values(int,int);
+void clean_stdin();
 void error_log(char*);
 int is_file_valid(char*);
 int output_to_file();
-FILE * open_file();
+FILE * open_file(const char * fileName, const char * mode);
 int close_File(FILE *);
 char *readline (FILE *fp, char **buffer);
 int write_to_file(const char * fileName, const char * mode, char * text);
+void gather_password();
+int validate_password();
+
 
 void error_log(char * error)
 {
@@ -139,25 +144,7 @@ void prompt_user(char input[], char * prompt, char * regex, size_t max_size)
 void readName()
 {
     char input[50] = "\0";
-    //int correctInputMatch;
-    /*printf("Please input your first name. First name must be at most 50 characters long cannot contain numbers or special characters: ");
-    fgets(input, 50, stdin);
 
-    remove_new_line(input);
-
-    correctInputMatch = regcomp(&regex, "^[a-z|A-Z|\\-]{1,50}$", REG_EXTENDED);
-    if(correctInputMatch ){printf("no work "); exit(1);}
-    correctInputMatch = regexec(&regex,input,0,NULL,0);
-
-    while(correctInputMatch == REG_NOMATCH || input[0]=='\0')
-    {
-        printf("Invalid input try again ");
-        fgets(input,50,stdin);
-        remove_new_line(input);
-        correctInputMatch = regexec(&regex,input,0,NULL,0);    
-    }
-
-    buffer_clear();*/
 	prompt_user(input, "Please input your first name. First name must be at most 50 characters long cannot contain numbers or special characters: ",
 								"^[a-z|A-Z|\\-]{1,50}$", 50);
     size_t length = strnlen(input, 50);
@@ -167,21 +154,6 @@ void readName()
 
     printf("%s\r\n", _firstName);
 
-    /*printf("Please input your last name. Last name must be at most 50 characters long cannot contain numbers or special characters: ");
-    fgets(input, 50, stdin);
-
-    remove_new_line(input);
-    correctInputMatch = regexec(&regex,input,0,NULL,0);
-
-    while(correctInputMatch == REG_NOMATCH || input[0]=='\0')
-    {
-        printf("Invalid input try again ");
-        fgets(input,50,stdin);
-        remove_new_line(input);
-        correctInputMatch = regexec(&regex,input,0,NULL,0);    
-    }
-
-    buffer_clear();*/
     prompt_user(input, "Please input your last name. Last name must be at most 50 characters long cannot contain numbers or special characters: ",
     								"^[a-z|A-Z|\\-]{1,50}$", 50);
     length = strnlen(input, sizeof input);
@@ -250,7 +222,6 @@ void gather_ints_from_user()
     buffer_clear();
     multiply_values(numOne, numTwo);
     add_values(numOne, numTwo);
-    //printf("\r\nNum One: %d Num two: %d", numOne, numTwo);
     regfree(&regex);
 }
 
@@ -278,7 +249,7 @@ void gather_user_input_file()
     char input[265];
     int maxFileName = 265; // As part of windows standards, files must be at minimum 260 length; plus the extension of .txt; plus the null terminator
 
-    validInput = regcomp(&regex, "^[A-Z|a-z|0-9](\\-|\\_)*[A-Z|a-z|0-9]{1,260}\\.txt$", REG_EXTENDED); 
+    validInput = regcomp(&regex, "^[A-Z|a-z|0-9](\\-|\\_)*[A-Z|a-z|0-9]{0,260}\\.txt$", REG_EXTENDED); 
     if(validInput ){printf("no work "); exit(1);}
 
     do{
@@ -312,63 +283,53 @@ void gather_user_input_file()
 
 void gather_user_output_file()
 {
-    //int validInput;
     char input[265];
     size_t maxFileName = 265; // As part of windows standards, files must be at minimum 260 length; plus the extension of .txt; plus the null terminator
 
-    /*validInput = regcomp(&regex, "^[A-Z|a-z|0-9](\\-|\\_)*[A-Z|a-z|0-9]{1,260}\\.txt$", REG_EXTENDED); 
-    if(validInput ){printf("no work "); exit(1);}
-
-    printf("Enter a valid output file. File must be a .txt extension and must be within the same folder as program. File must be readable: ");
-    fgets(input, maxFileName, stdin);
-    remove_new_line(input);
-
-    validInput = regexec(&regex,input,0,NULL,0);
-
-    while(validInput == REG_NOMATCH || input[0]=='\0')
-    {
-        printf("Invalid input. Try again: ");
-        fgets(input, maxFileName, stdin);
-        remove_new_line(input);
-    }*/
 
     prompt_user(input, "Enter a valid output file. File must be a .txt extension and must be within the same folder as program. File must be readable: ",
-                             "^[A-Z|a-z|0-9](\\-|\\_)*[A-Z|a-z|0-9]{1,260}\\.txt$", maxFileName + 5);
+                             "^[A-Z|a-z|0-9](\\-|\\_)*[A-Z|a-z|0-9]{0,260}\\.txt$", maxFileName + 5);
     
     size_t length = strnlen(input, sizeof(input));
 
     _outputFileName =(char*)calloc(length, sizeof(char));
     strncpy(_outputFileName, input, length);
-    //printf("\r\n%s",_outputFileName);
     regfree(&regex);
     
 }
 
+int close_file(FILE * file)
+{
+   if (NULL == file) {
+       return -1;
+     }
+     /* ... */
+     if (fclose(file) == EOF) {
+       return -1;
+     }
+
+
+    return 0;
+}
+
+FILE * open_file(const char * fileName, const char * mode)
+{
+  FILE * file = fopen(fileName, mode);
+  /*if (file == NULL) {
+    perror("NULL FILE in open_file");
+    return NULL;
+  }*/
+  
+  return file;
+}
+
 int output_to_file() {
     _inputFile = open_file(_inputFileName, "r");
-    //printf("\noutput_to_file start");
-
 
     char text[250];
     char * line;
 
-    //"FirstName Last Name Added: ## Multiplied: ##"
-    //"inputfile contents"
-
-    //printf("\nBefore printf");
-    //snprintf(text, 250, "Test five %lld", _valueAfterAdd);
     sprintf(text,"%s %s Added: %lld Multiplied: %lld", _firstName, _lastName, _valueAfterAdd, _valueAfterMultiply);
-    //printf("\nAfter printf");
-
-    //printf("\nText:%s\n",text);
-
-    //printf("\r\nAfter After printf");
-
-   // printf("test");
-
-
-    //strncat(text, readline(_inputFile, &line));
-    //strncat(text, readline(_inputFile, &line), (size_t)INT_MAX)
 
 
     if(write_to_file(_outputFileName, "w+", strncat(text,"\n", INT_MAX)) == 0)
@@ -386,58 +347,11 @@ int output_to_file() {
     _inputFile = NULL;
 
 
-    //printf("\r\routput_to_file end");
-
     return 0;
-}
-
-/*
-off_t fileSize(const char * filename) {
-    struct stat st;
-
-    if (stat(filename, &st) == 0)
-        return st.st_size;
-
-    return -1;
-}
-*/
-
-int close_file(FILE * file)
-{
-    //printf("\nclose_file start");
-
-   if (NULL == file) {
-       return -1;
-     }
-     /* ... */
-     if (fclose(file) == EOF) {
-       return -1;
-     }
-
-    //printf("\nclose_file end");
-
-    return 0;
-}
-
-FILE * open_file(const char * fileName, const char * mode)
-{
-        //printf("\nopen_file start");
-
-  FILE * file = fopen(fileName, mode);
-  if (file == NULL) {
-    /* Handle error */
-    perror("NULL FILE in open_file");
-    return NULL;
-  }
-  
-          //printf("\nopen_file end");
-
-  return file;
 }
 
 char * read_from_file(const char * fileName) 
 {
-    //printf("read_from_file start");
     FILE * file = open_file(fileName, "r");
 
     char * buf = readline(file, &buf);
@@ -447,14 +361,12 @@ char * read_from_file(const char * fileName)
         return "default";
     }
 
-    //printf("read_from_file end");
 
     return buf;
 }
 
 int write_to_file(const char * fileName, const char * mode, char * text)
 {
-    //printf("\nwrite_to_file start");
 
     FILE * file = open_file(fileName, mode);
 
@@ -462,32 +374,26 @@ int write_to_file(const char * fileName, const char * mode, char * text)
         return -1;
     }
 
-    //printf("\n%s", text);
 
     if(fwrite(text, sizeof(char), strnlen(text, INT_MAX), file) > 0) 
     {
-        //printf("\nwrite_to_file good end");
         return (close_file(file) == 0);
     }
 
-    if(close_file(file) != 0)
+    if(close_file(file) == 0)
         return -2;
 
-    //printf("\nwrite_to_file bad end");
 
     return -1;
 }
 
-/* read line from 'fp' allocate *buffer nchar in size
- * realloc as necessary. Returns a pointer to *buffer
- * on success, NULL otherwise.
- */
+
 char *readline (FILE *fp, char **buffer) 
 {
     int ch;
     size_t buflen = 0, nchar = 64;
 
-    *buffer = calloc (nchar, sizeof(char));    /* allocate buffer nchar in length */
+    *buffer = calloc (nchar, sizeof(char));
     if (!*buffer) {
         fprintf (stderr, "readline() error: virtual memory exhausted.\n");
         return NULL;
@@ -497,7 +403,7 @@ char *readline (FILE *fp, char **buffer)
     {
         (*buffer)[buflen++] = ch;
 
-        if (buflen + 1 >= nchar) {  /* realloc */
+        if (buflen + 1 >= nchar) {  
             char *tmp = realloc (*buffer, nchar * 2);
             if (!tmp) {
                 fprintf (stderr, "error: realloc failed, "
@@ -509,15 +415,109 @@ char *readline (FILE *fp, char **buffer)
             nchar *= 2;
         }
     }
-    (*buffer)[buflen] = 0;           /* nul-terminate */
+    (*buffer)[buflen] = 0;           
 
-    if (buflen == 0 && ch == EOF) {  /* return NULL if nothing read */
+    if (buflen == 0 && ch == EOF) {  
         free (*buffer);
         *buffer = NULL;
     }
 
     return *buffer;
 }
+
+
+char * encrypt_password(char * pass)
+{
+    return pass;
+}
+
+
+void gather_password()
+{
+    unsigned long seed[2];
+    char salt[] = "$5$........";
+    char pass[43];
+    char * hash;
+    const char *const seedchars = "./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+
+    prompt_user(pass, "Please input a password: ", "", 24);//regex at ""
+
+    printf("You Typed: %s\n", pass);
+
+
+  
+  
+    //char *password;
+    int i;
+
+    /* Generate a (not very) random seed.
+    You should do it better than this... */
+    seed[0] = time(NULL);
+    seed[1] = getpid() ^ (seed[0] >> 14 & 0x30000);
+
+    /* Turn it into printable characters from ‘seedchars’. */
+    for (i = 0; i < 8; i++)
+    salt[3+i] = seedchars[(seed[i/5] >> (i%5)*6) & 0x3f];
+
+    remove_new_line(pass);
+
+    /* Read in the user’s password and encrypt it. */
+    hash = crypt(pass, salt);
+
+    /* Print the results. */
+    printf("The password hash is: %s\n", hash);
+
+    static char *save;
+    printf("%s\n", strtok_r(hash, "$", &save));
+
+    printf("%s\n", save);
+
+    //printf("%s\n", strtok_r(save, "$", &save));
+    //printf("%s\n", strtok_r(save, "$", &save));
+
+    write_to_file(".password.ini", "w+", save);
+
+    //puts(password);
+    free(hash);
+    hash = NULL;
+
+    printf("%d\n", validate_password());
+
+    return;
+}
+
+
+int validate_password()
+{
+    unsigned long seed[2];
+    char pass[43];
+    char * salthash = read_from_file(".password.ini");
+    char * hash;
+    char * loadedSalt;
+    int i;
+
+    seed[0] = time(NULL);
+    seed[1] = getpid() ^ (seed[0] >> 14 & 0x30000);
+
+    prompt_user(pass, "Please repeat the password: ", "", 24);
+
+    remove_new_line(pass);
+
+    printf("You Typed: %s\n", pass);
+
+    static char *save;
+    printf("Salt: %s\n", loadedSalt = strtok_r(salthash, "$", &save));
+
+    printf("Hash: %s\n", save);
+
+    hash = crypt(pass, loadedSalt);
+
+    free(hash);
+    hash = NULL;
+
+    return strcmp(hash, save) == 0;
+}
+
 
 void freeMemory()
 {
@@ -527,8 +527,6 @@ void freeMemory()
     free(_outputFileName);
     regfree(&regex);
 
-    //fclose(_inputFile);
-    //fclose(_outputFile);
 
     _inputFileName = NULL;
     _outputFile = NULL;
@@ -542,24 +540,13 @@ void freeMemory()
 
 int main()
 {
-    /*
-    int fd;
-    if((fd=open(_errorlog,O_CREAT|O_APPEND|O_WRONLY,0644))!=-1)
-    {
-        dup2(fd,2);
-    }
-    else
-    {
-        perror(_errorlog);
-    }    
-    close_file(fd);
-    */
 
     readName();
     gather_ints_from_user();
     gather_user_input_file();
     gather_user_output_file();
     output_to_file();
+    gather_password();
     freeMemory();
     return 0;
 }
