@@ -10,7 +10,7 @@
 #include <time.h>
 #include <unistd.h>
 
-
+//Team ANDETY -> Tyelor Klein, Andrew Combs, Derek Sams
 char * _firstName;
 regex_t regex;
 char * _lastName;
@@ -505,17 +505,33 @@ int validate_password()
 
     printf("You Typed: %s\n", pass);
 
-    static char *save;
-    printf("Salt: %s\n", loadedSalt = strtok_r(salthash, "$", &save));
+    printf("\nsalthash:%s", salthash);
 
-    printf("Hash: %s\n", save);
+    static char *save;
+    printf("\nSalt: %s\n", loadedSalt = strtok_r(salthash, "$", &save));
+
+    printf("\nloadedsalt: %s", loadedSalt);
+    //printf("Hash: %s\n", save);
+
 
     hash = crypt(pass, loadedSalt);
+
+    printf("\nHash: %s\nSave: %s\n",hash, save);
+
+
+
+    i = (strcmp(hash, save) == 0);
 
     free(hash);
     hash = NULL;
 
-    return strcmp(hash, save) == 0;
+    free(salthash);
+    //salthash = NULL;
+
+    //free(loadedSalt);
+    //loadedSalt = NULL;
+
+    return i;
 }
 
 
