@@ -61,6 +61,7 @@ namespace DefendYourCodeMidTerm
         /// <returns> returns true if permissions were set to allow access else false</returns>
         private static bool CheckFilePermissions(string absoluteFilePath)
         {
+
             var writeAllowAndReadAllow = false;
             var writeDenyAndReadDeny = false;
             var accessControlList = Directory.GetAccessControl(absoluteFilePath);
@@ -171,7 +172,7 @@ namespace DefendYourCodeMidTerm
             {
                 fileOutputName = GetUserInput("Enter a valid output file. File must be a .txt extension and must be within debug/bin. File must also be readable.", _fileNamePattern);
 
-            } while (!CheckFilePermissions(Path.GetFullPath(fileOutputName)) || fileOutputName == _fileInputName);
+            } while (!File.Exists(fileOutputName) || !CheckFilePermissions(Path.GetFullPath(fileOutputName)) || fileOutputName == _fileInputName);
 
             _fileOutputName = fileOutputName;
         }
