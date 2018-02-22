@@ -5,3 +5,4 @@ Notes: C# input file and output file must exist in c# and live within the bin/de
 	C Files input file must exist and live within the same folder as the program, must also have a .txt extension.
 Issues relating to program: Currently 3 errors are being reported in Valgrind, related to filename pointer giving space than freeing it.
 				C Sometimes user may need to hit enter when putting in input. Reason for this is buffer clearing sometimes requires for a \n
+				C password hashing is not able to validate correctly
