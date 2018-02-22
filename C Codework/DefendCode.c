@@ -152,16 +152,12 @@ void readName()
     _firstName = (char*)calloc(length+1, sizeof(char));
     strncpy(_firstName, input, length);
 
-    printf("%s\r\n", _firstName);
-
     prompt_user(input, "Please input your last name. Last name must be at most 50 characters long cannot contain numbers or special characters: ",
     								"^[a-z|A-Z|\\-]{1,50}$", 50);
     length = strnlen(input, sizeof input);
 
     _lastName = (char*)calloc(length + 1, sizeof(char)); 
     strncpy(_lastName, input, length);
-
-    printf("%s\r\n", _lastName);
 
     regfree(&regex);
 }
@@ -184,7 +180,6 @@ void gather_ints_from_user()
         
 
     validInput = regexec(&regex,input,0,NULL,0);
-    printf("\r\nInput: %s",input);
 
     while(validInput == REG_NOMATCH || is_numbers_valid_range(strtol(input, NULL, 10))  == 0)
     {
@@ -440,48 +435,36 @@ void gather_password()
     char * hash;
     const char *const seedchars = "./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
-    prompt_user(pass, "Please input a password: ", "", 24);//regex at ""
+    prompt_user(pass, "Please input a password 8-24 characters (A-Za-z0-9): ", "^[A-Za-z0-9]{8,24}$", 24);//regex at ""
 
-    printf("You Typed: %s\n", pass);
-
-
-  
-  
-    //char *password;
     int i;
 
-    /* Generate a (not very) random seed.
-    You should do it better than this... */
     seed[0] = time(NULL);
     seed[1] = getpid() ^ (seed[0] >> 14 & 0x30000);
 
-    /* Turn it into printable characters from ‘seedchars’. */
     for (i = 0; i < 8; i++)
     salt[3+i] = seedchars[(seed[i/5] >> (i%5)*6) & 0x3f];
 
     remove_new_line(pass);
 
-    /* Read in the user’s password and encrypt it. */
     hash = crypt(pass, salt);
 
-    /* Print the results. */
-    printf("The password hash is: %s\n", hash);
-
     static char *save;
-    printf("%s\n", strtok_r(hash, "$", &save));
-
-    printf("%s\n", save);
-
-    //printf("%s\n", strtok_r(save, "$", &save));
-    //printf("%s\n", strtok_r(save, "$", &save));
+    strtok_r(hash, "$", &save);
 
     write_to_file(".password.ini", "w+", save);
 
-    //puts(password);
     free(hash);
     hash = NULL;
 
-    printf("%d\n", validate_password());
+    if(validate_password() != 0)
+    {
+    	printf("%s\n", "Password is correct!");
+    }
+    else
+    {
+    	printf("%s\n", "Password is not correct...");
+    }
 
     return;
 }
@@ -499,39 +482,30 @@ int validate_password()
     seed[0] = time(NULL);
     seed[1] = getpid() ^ (seed[0] >> 14 & 0x30000);
 
-    prompt_user(pass, "Please repeat the password: ", "", 24);
+    prompt_user(pass, "Please repeat the password: ", "^[A-Za-z0-9]{8,24}$", 24);
 
     remove_new_line(pass);
 
-    printf("You Typed: %s\n", pass);
-
-    printf("\nsalthash:%s", salthash);
-
     static char *save;
-    printf("\nSalt: %s\n", loadedSalt = strtok_r(salthash, "$", &save));
+    loadedSalt = strtok_r(salthash, "$", &save);
 
-    printf("\nloadedsalt: %s", loadedSalt);
-    //printf("Hash: %s\n", save);
+    char cryptMode[] = "$5$";
+    char * salt = strcat(cryptMode, loadedSalt);
+    remove_new_line(loadedSalt);
 
+    hash = crypt(pass, salt);
 
-    hash = crypt(pass, loadedSalt);
+    strtok_r(hash, "$", &hash);
+    strtok_r(hash, "$", &hash);
+    i = strcmp(hash, save);
 
-    printf("\nHash: %s\nSave: %s\n",hash, save);
-
-
-
-    i = (strcmp(hash, save) == 0);
-
-    free(hash);
-    hash = NULL;
 
     free(salthash);
-    //salthash = NULL;
+    salthash = NULL;
+    hash = NULL;
+    loadedSalt = NULL;
 
-    //free(loadedSalt);
-    //loadedSalt = NULL;
-
-    return i;
+    return i == 0;
 }
 
 
