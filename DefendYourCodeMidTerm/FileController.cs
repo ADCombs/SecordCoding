@@ -1,8 +1,6 @@
-﻿// Author: Tyelor Klein
-// Written for my game, and reused here in our project. Just a simple controller for handling file i/o.
-// Probably not the best way to go about it, but likely not a horrible way either. Can handle outputting to directories.
-// Does not do any error checking or catching. Assumes valid inputs when being used, so make sure to check your input before
-// calling any FileController methods!!
+﻿// Andrew Combs
+// Derek Sams
+// Tyelor Klein
 
 /*  
  * ============================================================================================================================  

@@ -12,6 +12,12 @@ using System.Security.Principal;
 
 namespace DefendYourCodeMidTerm
 {
+    /// <summary>
+    /// Project Written and created by:
+    /// Andrew Combs
+    /// Derek Sams
+    /// Tyelor Klein
+    /// </summary>
     partial class DefendCodeMain
     {
         private static string _name;
