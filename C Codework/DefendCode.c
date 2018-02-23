@@ -35,7 +35,7 @@ void error_log(char*);
 int is_file_valid(char*);
 int output_to_file();
 FILE * open_file(const char * fileName, const char * mode);
-int close_File(FILE *);
+int close_file(FILE *);
 char *readline (FILE *fp, char **buffer);
 int write_to_file(const char * fileName, const char * mode, char * text);
 void gather_password();
