@@ -39,7 +39,7 @@ int close_file(FILE *);
 char *readline (FILE *fp, char **buffer);
 int write_to_file(const char * fileName, const char * mode, char * text);
 void gather_password();
-int validate_password();
+void validate_password();
 
 
 void error_log(char * error)
@@ -244,7 +244,7 @@ void gather_user_input_file()
     char input[265];
     int maxFileName = 265; // As part of windows standards, files must be at minimum 260 length; plus the extension of .txt; plus the null terminator
 
-    validInput = regcomp(&regex, "^[A-Z|a-z|0-9](\\-|\\_)*[A-Z|a-z|0-9]{0,260}\\.txt$", REG_EXTENDED); 
+    validInput = regcomp(&regex, "^[A-Z|a-z|0-9](\\-|\\_)*[A-Z|a-z|0-9]{0,260}\\.txt$", REG_EXTENDED);
     if(validInput ){printf("no work "); exit(1);}
 
     do{
@@ -291,6 +291,11 @@ void gather_user_output_file()
     strncpy(_outputFileName, input, length);
     regfree(&regex);
     
+    /*if(strcmp(_inputFileName, _outputFileName) == 0) {
+    	printf("%s\n", "Output file must be different than input file!");
+    	gather_user_output_file();
+    }*/
+
 }
 
 int close_file(FILE * file)
@@ -456,28 +461,29 @@ void gather_password()
 
     free(hash);
     hash = NULL;
+    save = NULL;
 
-    if(validate_password() != 0)
+    /*if(validate_password() != 0)
     {
     	printf("%s\n", "Password is correct!");
     }
     else
     {
     	printf("%s\n", "Password is not correct...");
-    }
+    }*/
 
     return;
 }
 
 
-int validate_password()
+void validate_password()
 {
     unsigned long seed[2];
     char pass[43];
     char * salthash = read_from_file(".password.ini");
     char * hash;
     char * loadedSalt;
-    int i;
+    //int i;
 
     seed[0] = time(NULL);
     seed[1] = getpid() ^ (seed[0] >> 14 & 0x30000);
@@ -486,8 +492,8 @@ int validate_password()
 
     remove_new_line(pass);
 
-    static char *save;
-    loadedSalt = strtok_r(salthash, "$", &save);
+    static char *validSave;
+    loadedSalt = strtok_r(salthash, "$", &validSave);
 
     char cryptMode[] = "$5$";
     char * salt = strcat(cryptMode, loadedSalt);
@@ -497,15 +503,29 @@ int validate_password()
 
     strtok_r(hash, "$", &hash);
     strtok_r(hash, "$", &hash);
-    i = strcmp(hash, save);
-
+    //i = ;
 
     free(salthash);
     salthash = NULL;
-    hash = NULL;
+    //hash = NULL;
     loadedSalt = NULL;
+    //validSave = NULL;
 
-    return i == 0;
+    if(strcmp(hash, validSave) != 0)
+    {
+    	hash = NULL;
+    	validSave = NULL;
+    	printf("%s\n", "Password is not correct...");
+    	validate_password();
+    }
+    else
+    {
+    	hash = NULL;
+    	validSave = NULL;
+    	printf("%s\n", "Password is correct!");
+    }
+
+    return;
 }
 
 
@@ -535,8 +555,9 @@ int main()
     gather_ints_from_user();
     gather_user_input_file();
     gather_user_output_file();
-    output_to_file();
     gather_password();
+    validate_password();
+    output_to_file();
     freeMemory();
     return 0;
 }
