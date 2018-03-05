@@ -131,6 +131,7 @@ void prompt_user(char input[], char * prompt, char * regex, size_t max_size)
 	{
 		clean_stdin();
 		printf("%s\r\n", "Invalid input...");
+		clean_stdin();
 		prompt_user(input, prompt, regex, max_size);
 	}
 	else if(correctInputMatch == REG_NOERROR)
@@ -239,16 +240,16 @@ int is_file_valid(char* inputFileName)
 
 void gather_user_input_file()
 {
-    int validInput;
+    //int validInput;
     char input[265];
     int maxFileName = 265; // As part of windows standards, files must be at minimum 260 length; plus the extension of .txt; plus the null terminator
 
-    validInput = regcomp(&regex, "^[A-Z|a-z|0-9](\\-|\\_)*[A-Z|a-z|0-9]{0,260}\\.txt$", REG_EXTENDED);
-    if(validInput ){printf("no work "); exit(1);}
+    /*validInput = regcomp(&regex, "^[A-Z|a-z|0-9](\\-|\\_)*[A-Z|a-z|0-9]{0,260}\\.txt$", REG_EXTENDED);
+    if(validInput ){printf("no work "); exit(1);}*/
 
     do{
         
-        printf("Enter a valid input file. File must be a .txt extension and must be within the same folder as program. File must be readable: ");
+        /*printf("Enter a valid input file. File must be a .txt extension and must be within the same folder as program. File must be readable: ");
         fgets(input, maxFileName, stdin);
         remove_new_line(input);
 
@@ -261,9 +262,10 @@ void gather_user_input_file()
             remove_new_line(input);
 
             validInput = regexec(&regex,input,0,NULL,0);
-        }
+        }*/
         
-        
+    	prompt_user(input, "Enter a valid iutput file. File must be a .txt extension and must be within the same folder as program. File must be readable: ",
+    	                                 "^[A-Z|a-z|0-9](\\-|\\_)*[A-Z|a-z|0-9]{0,260}\\.txt$", maxFileName + 5);
 
     }while(is_file_valid(input) != FILE_IS_READABLE);
 
@@ -277,27 +279,11 @@ void gather_user_input_file()
 
 void gather_user_output_file()
 {
-    int validInput;
     char input[265];
     int maxFileName = 265; // As part of windows standards, files must be at minimum 260 length; plus the extension of .txt; plus the null terminator
 
-    validInput = regcomp(&regex, "^[A-Z|a-z|0-9](\\-|\\_)*[A-Z|a-z|0-9]{0,260}\\.txt$", REG_EXTENDED);
-    if(validInput ){printf("no work "); exit(1);}
-
-    printf("Enter a valid output file. File must be a .txt extension and must be within the same folder as program. File must be readable: ");
-    fgets(input, maxFileName, stdin);
-    remove_new_line(input);
-
-    validInput = regexec(&regex,input,0,NULL,0);
-
-    while(validInput == REG_NOMATCH || input[0]=='\0')
-    {
-        printf("Invalid input. Try again: ");
-        fgets(input, maxFileName, stdin);
-        remove_new_line(input);
-
-        validInput = regexec(&regex,input,0,NULL,0);
-    }
+    prompt_user(input, "Enter a valid output file. File must be a .txt extension and must be within the same folder as program. File must be readable: ",
+                                 "^[A-Z|a-z|0-9](\\-|\\_)*[A-Z|a-z|0-9]{0,260}\\.txt$", maxFileName + 5);
     
     size_t length = strnlen(input, 265);
 
@@ -420,10 +406,12 @@ char *readline (FILE *fp, char **buffer)
                 fprintf (stderr, "error: realloc failed, "
                                 "returning partial buffer.\n");
                 (*buffer)[buflen] = 0;
+                //free(tmp);
                 return *buffer;
             }
             *buffer = tmp;
             nchar *= 2;
+            //free(tmp);
         }
     }
     (*buffer)[buflen] = 0;           
@@ -447,7 +435,7 @@ void gather_password()
 {
     unsigned long seed[2];
     char salt[] = "$5$........";
-    char pass[43];
+    char pass[32];
     char * hash;
     const char *const seedchars = "./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
@@ -481,7 +469,7 @@ void gather_password()
 void validate_password()
 {
     unsigned long seed[2];
-    char pass[43];
+    char pass[32];
     char * salthash = read_from_file(".password.ini");
     char * hash;
     char * loadedSalt;
@@ -489,6 +477,7 @@ void validate_password()
     seed[0] = time(NULL);
     seed[1] = getpid() ^ (seed[0] >> 14 & 0x30000);
 
+	//clean_stdin();
     prompt_user(pass, "Please repeat the password: ", "^[A-Za-z0-9]{8,24}$", 32);
 
     remove_new_line(pass);
