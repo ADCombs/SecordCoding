@@ -125,6 +125,7 @@ void prompt_user(char input[], char * prompt, char * regex, size_t max_size)
 	correctInputMatch = regcomp(&regext, regex, REG_EXTENDED);
 	if(correctInputMatch ){printf("no work"); exit(1);}
 	correctInputMatch = regexec(&regext,userInput,0,NULL,0);
+	regfree(&regext);
 
 	if(correctInputMatch == REG_NOMATCH || userInput[0]=='\0')
 	{
@@ -136,8 +137,6 @@ void prompt_user(char input[], char * prompt, char * regex, size_t max_size)
 	{
 		strncpy(input, userInput, max_size);
 	}
-
-	regfree(&regext);
 }
 
 
@@ -278,14 +277,29 @@ void gather_user_input_file()
 
 void gather_user_output_file()
 {
+    int validInput;
     char input[265];
-    size_t maxFileName = 265; // As part of windows standards, files must be at minimum 260 length; plus the extension of .txt; plus the null terminator
+    int maxFileName = 265; // As part of windows standards, files must be at minimum 260 length; plus the extension of .txt; plus the null terminator
 
+    validInput = regcomp(&regex, "^[A-Z|a-z|0-9](\\-|\\_)*[A-Z|a-z|0-9]{0,260}\\.txt$", REG_EXTENDED);
+    if(validInput ){printf("no work "); exit(1);}
 
-    prompt_user(input, "Enter a valid output file. File must be a .txt extension and must be within the same folder as program. File must be readable: ",
-                             "^[A-Z|a-z|0-9](\\-|\\_)*[A-Z|a-z|0-9]{0,260}\\.txt$", maxFileName + 5);
+    printf("Enter a valid output file. File must be a .txt extension and must be within the same folder as program. File must be readable: ");
+    fgets(input, maxFileName, stdin);
+    remove_new_line(input);
+
+    validInput = regexec(&regex,input,0,NULL,0);
+
+    while(validInput == REG_NOMATCH || input[0]=='\0')
+    {
+        printf("Invalid input. Try again: ");
+        fgets(input, maxFileName, stdin);
+        remove_new_line(input);
+
+        validInput = regexec(&regex,input,0,NULL,0);
+    }
     
-    size_t length = strnlen(input, sizeof(input));
+    size_t length = strnlen(input, 265);
 
     _outputFileName =(char*)calloc(length, sizeof(char));
     strncpy(_outputFileName, input, length);
@@ -316,10 +330,6 @@ int close_file(FILE * file)
 FILE * open_file(const char * fileName, const char * mode)
 {
   FILE * file = fopen(fileName, mode);
-  /*if (file == NULL) {
-    perror("NULL FILE in open_file");
-    return NULL;
-  }*/
   
   return file;
 }
@@ -464,15 +474,6 @@ void gather_password()
     hash = NULL;
     save = NULL;
 
-    /*if(validate_password() != 0)
-    {
-    	printf("%s\n", "Password is correct!");
-    }
-    else
-    {
-    	printf("%s\n", "Password is not correct...");
-    }*/
-
     return;
 }
 
@@ -484,12 +485,11 @@ void validate_password()
     char * salthash = read_from_file(".password.ini");
     char * hash;
     char * loadedSalt;
-    //int i;
 
     seed[0] = time(NULL);
     seed[1] = getpid() ^ (seed[0] >> 14 & 0x30000);
 
-    prompt_user(pass, "Please repeat the password: ", "^[A-Za-z0-9]{8,24}$", 24);
+    prompt_user(pass, "Please repeat the password: ", "^[A-Za-z0-9]{8,24}$", 32);
 
     remove_new_line(pass);
 
@@ -504,13 +504,10 @@ void validate_password()
 
     strtok_r(hash, "$", &hash);
     strtok_r(hash, "$", &hash);
-    //i = ;
 
     free(salthash);
     salthash = NULL;
-    //hash = NULL;
     loadedSalt = NULL;
-    //validSave = NULL;
 
     if(strcmp(hash, validSave) != 0)
     {
