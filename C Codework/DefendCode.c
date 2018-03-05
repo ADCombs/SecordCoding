@@ -291,10 +291,11 @@ void gather_user_output_file()
     strncpy(_outputFileName, input, length);
     regfree(&regex);
     
-    /*if(strcmp(_inputFileName, _outputFileName) == 0) {
+    if(strcmp(_inputFileName, _outputFileName) == 0) {
+    	free(_outputFileName);
     	printf("%s\n", "Output file must be different than input file!");
     	gather_user_output_file();
-    }*/
+    }
 
 }
 
